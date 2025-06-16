@@ -16,7 +16,7 @@ Variants {
 		required property ShellScreen modelData
 		screen: modelData
 		WlrLayershell.exclusionMode: ExclusionMode.Ignore
-		WlrLayershell.layer: WlrLayer.Background
+		WlrLayershell.layer: WlrLayer.Bottom
 		color: "transparent"
 		anchors {
 			top: true
@@ -39,6 +39,7 @@ Variants {
 			color: Sakura.layerBase
 
 			Clock {}
+			Workspaces {}
 		}
 
 		Corner {
