@@ -58,7 +58,7 @@ Canvas {
 		anchors.bottom: pin.top
 		anchors.bottomMargin: 0
 		text: clock.hour.toString().padStart(2, "0")
-		color: area.containsMouse ? Sakura.textMuted : Sakura.hlMed
+		color: area.containsMouse ? Sakura.textMuted : Sakura.layerBase
 		font {
 			family: "Ubuntu Nerd Font"
 			pixelSize: 18
@@ -79,7 +79,7 @@ Canvas {
 		anchors.top: pin.bottom
 		anchors.topMargin: 0
 		text: clock.minute.toString().padStart(2, "0")
-		color: area.containsMouse ? Sakura.textMuted : Sakura.hlMed
+		color: area.containsMouse ? Sakura.textMuted : Sakura.layerBase
 		font {
 			family: "Ubuntu Nerd Font"
 			pixelSize: 18
@@ -102,9 +102,8 @@ Canvas {
 		text: months[clock.month]
 		color: Sakura.paintIris
 		font {
-			family: "GoMono Nerd Font Mono"
+			family: "Ubuntu Nerd Font"
 			pixelSize: 12
-			weight: 800
 		}
 		opacity: area.containsMouse ? 1 : 0
 
@@ -120,14 +119,15 @@ Canvas {
 		anchors.right: clockBody.right
 		anchors.rightMargin: 8
 		text: clock.day.toString().padStart(2, "0")
-		color: area.containsMouse ? Sakura.paintIris : Sakura.hlMed
+		color: Sakura.paintIris
 		font {
-			family: "GoMono Nerd Font Mono"
+			family: "Ubuntu Nerd Font"
 			pixelSize: 12
+			weight: area.containsMouse ? 400 : 800
 		}
 
-		Behavior on color {
-			ColorAnimation {
+		Behavior on font.weight {
+			NumberAnimation {
 				duration: 150
 				easing.type: Easing.InOutQuad
 			}
