@@ -7,10 +7,10 @@ import "root:/config"
 Canvas {
 	id: clock
 
-	width: 64
-	height: 64
+	width: 96
+	height: 96
 
-	anchors.bottomMargin: 16
+	// anchors.bottomMargin: 16
 	anchors.bottom: parent.bottom
 	anchors.horizontalCenter: parent.horizontalCenter
 	// anchors.centerIn: parent
@@ -18,6 +18,8 @@ Canvas {
 	property int hour: 0
 	property int minute: 0
 	property int milli: 0
+	property int month: 0
+	property int day: 0
 
 	Timer {
 		interval: 100
@@ -27,7 +29,108 @@ Canvas {
 			var now = new Date();
 			clock.hour = now.getHours() % 12;
 			clock.minute = now.getMinutes();
+			clock.month = now.getMonth();
+			clock.day = now.getDate();
 			clock.milli = now.getMilliseconds() + now.getSeconds() * 1000;
+		}
+	}
+
+	Rectangle {
+		id: pin
+		width: clockBody.handWidth * 2
+		height: clockBody.handWidth * 2
+		radius: clockBody.handWidth * 2
+		color: Sakura.textNormal
+		anchors.centerIn: parent
+		z: 1000
+		opacity: area.containsMouse ? 0.1 : 1
+
+		Behavior on opacity {
+			NumberAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
+		}
+	}
+
+	Text {
+		anchors.horizontalCenter: parent.horizontalCenter
+		anchors.bottom: pin.top
+		anchors.bottomMargin: 0
+		text: clock.hour.toString().padStart(2, "0")
+		color: area.containsMouse ? Sakura.textMuted : Sakura.hlMed
+		font {
+			family: "Ubuntu Nerd Font"
+			pixelSize: 18
+			weight: 800
+		}
+
+		Behavior on color {
+			ColorAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
+		}
+	}
+
+	Text {
+		id: minuteLabel
+		anchors.horizontalCenter: parent.horizontalCenter
+		anchors.top: pin.bottom
+		anchors.topMargin: 0
+		text: clock.minute.toString().padStart(2, "0")
+		color: area.containsMouse ? Sakura.textMuted : Sakura.hlMed
+		font {
+			family: "Ubuntu Nerd Font"
+			pixelSize: 18
+			weight: 800
+		}
+
+		Behavior on color {
+			ColorAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
+		}
+	}
+
+	Text {
+		anchors.verticalCenter: parent.verticalCenter
+		anchors.right: pin.left
+		anchors.rightMargin: 2
+		property list<string> months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+		text: months[clock.month]
+		color: Sakura.paintIris
+		font {
+			family: "GoMono Nerd Font Mono"
+			pixelSize: 12
+			weight: 800
+		}
+		opacity: area.containsMouse ? 1 : 0
+
+		Behavior on opacity {
+			NumberAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
+		}
+	}
+	Text {
+		anchors.verticalCenter: parent.verticalCenter
+		anchors.right: clockBody.right
+		anchors.rightMargin: 8
+		text: clock.day.toString().padStart(2, "0")
+		color: area.containsMouse ? Sakura.paintIris : Sakura.hlMed
+		font {
+			family: "GoMono Nerd Font Mono"
+			pixelSize: 12
+		}
+
+		Behavior on color {
+			ColorAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
 		}
 	}
 
@@ -38,18 +141,27 @@ Canvas {
 		property int handWidth: 2
 
 		anchors.centerIn: parent
-		width: clock.width
+		width: 64
 		height: clockBody.width
 		color: "transparent"
 		border.color: Sakura.textNormal
 
 		radius: clockBody.width
+		opacity: area.containsMouse ? 0.1 : 1
+
+		Behavior on opacity {
+			NumberAnimation {
+				duration: 150
+				easing.type: Easing.InOutQuad
+			}
+		}
 
 		Rectangle {
 			id: hourHand
 			width: clockBody.handWidth
 			height: clockBody.height / 4
 			antialiasing: clockBody.antialiasing
+			radius: 100
 
 			color: Sakura.paintPine
 			anchors.bottom: parent.verticalCenter
@@ -71,6 +183,7 @@ Canvas {
 			color: Sakura.paintPine
 			anchors.bottom: parent.verticalCenter
 			anchors.horizontalCenter: parent.horizontalCenter
+			radius: 100
 
 			transform: Rotation {
 				origin.x: minuteHand.width / 2
@@ -88,6 +201,7 @@ Canvas {
 			anchors.bottom: parent.verticalCenter
 			anchors.horizontalCenter: parent.horizontalCenter
 			antialiasing: clockBody.antialiasing
+			radius: 100
 
 			transform: Rotation {
 				origin.x: secondHand.width / 2
@@ -95,14 +209,11 @@ Canvas {
 				angle: (clock.milli / 1000) * 6
 			}
 		}
+	}
 
-		Rectangle {
-			id: pin
-			width: clockBody.handWidth * 2
-			height: clockBody.handWidth * 2
-			radius: clockBody.handWidth * 2
-			color: Sakura.textNormal
-			anchors.centerIn: parent
-		}
+	MouseArea {
+		id: area
+		hoverEnabled: true
+		anchors.fill: clock
 	}
 }
