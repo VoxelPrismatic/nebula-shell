@@ -8,7 +8,7 @@ import QtQuick
 Singleton {
 	id: root
 
-	readonly property list<Client> tiles: []
+	readonly property list<Tile> tiles: []
 	Process {
 		id: getTiles
 
@@ -35,7 +35,7 @@ Singleton {
 			}
 		}
 	}
-	component Client: QtObject {
+	component Tile: QtObject {
 		required property var lastIpcObject
 		readonly property string address: lastIpcObject.address
 		readonly property string wmClass: lastIpcObject.class
@@ -61,7 +61,7 @@ Singleton {
 	Component {
 		id: refresh
 
-		Client {}
+		Tile {}
 	}
 	Component.onCompleted: root.refresh()
 	Connections {

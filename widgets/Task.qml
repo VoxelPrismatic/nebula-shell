@@ -25,7 +25,37 @@ Rectangle {
 		radius: parent.radius
 	}
 
-	function iconLocator() {
+	function jaccardSimilarity(str1: string, str2: string): double {
+		var words1 = str1.toLowerCase().split(/\s+/);
+		var words2 = str2.toLowerCase().split(/\s+/);
+		var set1 = new Set(words1);
+		var set2 = new Set(words2);
+		var intersection = new Set([...set1].filter(x => set2.has(x)));
+		var union = new Set([...set1, ...set2]);
+		return intersection.size / union.size;
+	}
+
+	function locateIcon() {
+		var bestEntry = null;
+		var bestSimilarity = 0;
+		const initialTitle = Tiles.tiles.find(t => t.wmClass == root.app.appId).initialTitle;
+		for (var entry of DesktopEntries.applications.values) {
+			if (!entry.name)
+				continue;
+			var similarity = jaccardSimilarity(initialTitle, entry.name);
+			if (similarity > bestSimilarity) {
+				bestSimilarity = similarity;
+				bestEntry = entry;
+			}
+		}
+		if (bestEntry) {
+			var iconFromEntry = Quickshell.iconPath(bestEntry.icon, false);
+			if (iconFromEntry !== "") {
+				root.entry = bestEntry;
+				return bestEntry.icon;
+			}
+		}
+		return "application-x-executable";
 	}
 
 	Button {
@@ -34,7 +64,7 @@ Rectangle {
 		height: 24
 		anchors.centerIn: parent
 		icon {
-			name: root.entry?.icon.trim()
+			name: root.entry?.icon || root.locateIcon()
 			width: 24
 			height: 24
 		}
@@ -61,7 +91,7 @@ Rectangle {
 		property int targetId
 		onHoveredChanged: function () {
 			if (area.containsMouse) {
-				ToolTip.show(ico.icon.name);
+				ToolTip.show(root.entry.name || root.app.title || root.app.appId);
 			} else {
 				ToolTip.hide();
 			}
