@@ -7,10 +7,11 @@ import Quickshell
 import Quickshell.Hyprland
 
 import "root:/config"
-import "root:/svc"
 
 Canvas {
 	id: switcher
+
+	required property string screen
 
 	width: Opts.workspace.cellSize * Opts.workspace.columns
 	height: Opts.workspace.cellSize * Math.ceil((Hyprland.workspaces.values.length + (plus.visible ? 1 : 0)) / Opts.workspace.columns)
@@ -22,27 +23,28 @@ Canvas {
 	GridLayout {
 		id: grid
 		columns: Opts.workspace.columns
-		rows: Math.ceil(Hypr.workspaces.values.length / Opts.workspace.columns)
+		rows: Math.ceil(Hyprland.workspaces.values.length / Opts.workspace.columns)
 		width: parent.width
 		height: parent.height
 
 		Repeater {
-			model: Hypr.workspaces.values.length
+			model: Hyprland.workspaces.values.length
 
 			Workspace {
 				required property int modelData
 				idx: modelData
 				label: Opts.workspace.names[modelData] || modelData
 				isMax: false
+				mon: Hyprland.monitors.values.find(e => e.name == switcher.screen)
 			}
 		}
 
 		Workspace {
 			id: plus
-			idx: Hypr.workspaces.values.length + 1
+			idx: Hyprland.workspaces.values.length + 1
 			label: "+"
 			isMax: true
-			visible: Hypr.workspaces.values.reduce((acc, cur) => acc + (cur.lastIpcObject.windows == "0") ? 1 : 0, 0) == 0
+			visible: Hyprland.workspaces.values.reduce((acc, cur) => acc + (cur.lastIpcObject.windows == "0") ? 1 : 0, 0) == 0
 		}
 
 		ToolTip {

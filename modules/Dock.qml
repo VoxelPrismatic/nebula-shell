@@ -38,8 +38,16 @@ Variants {
 
 			color: Sakura.layerBase
 
+			Workspaces {
+				id: workspaces
+				screen: root.modelData.name
+			}
+			Line {
+				id: workspace_separator
+				anchors.topMargin: 8
+				anchors.top: workspaces.bottom
+			}
 			Clock {}
-			Workspaces {}
 		}
 
 		Corner {
