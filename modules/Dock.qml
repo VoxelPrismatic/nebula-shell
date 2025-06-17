@@ -47,11 +47,16 @@ Variants {
 				anchors.topMargin: 8
 				anchors.top: workspaces.bottom
 			}
+			Tasks {
+
+				anchors.topMargin: 8
+				anchors.top: workspace_separator.bottom
+			}
 			Clock {}
 		}
 
 		Corner {
-			px: 16
+			px: 12
 			color: Sakura.layerBase
 			botRight: true
 			anchors.right: parent.right
@@ -60,7 +65,7 @@ Variants {
 		}
 
 		Corner {
-			px: 16
+			px: 12
 			color: Sakura.layerBase
 			topRight: true
 			anchors.right: parent.right

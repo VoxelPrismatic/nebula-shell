@@ -46,9 +46,16 @@ Canvas {
 			isMax: true
 			visible: Hyprland.workspaces.values.reduce((acc, cur) => acc + (cur.lastIpcObject.windows == "0") ? 1 : 0, 0) == 0
 		}
+	}
 
-		ToolTip {
-			id: tooltip_
+	Timer {
+		interval: 100
+		repeat: true
+		running: true
+
+		onTriggered: {
+			Hyprland.refreshWorkspaces();
+			Hyprland.refreshMonitors();
 		}
 	}
 }

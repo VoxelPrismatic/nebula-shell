@@ -63,9 +63,12 @@ Rectangle {
 			} else {
 				Hyprland.dispatch(`focusworkspaceoncurrentmonitor ${this.targetId}`);
 			}
-			Hyprland.refreshWorkspaces();
-			Hyprland.refreshMonitors();
 		}
 		acceptedButtons: Qt.LeftButton | Qt.RightButton
+	}
+
+	onColorChanged: {
+		Hyprland.refreshWorkspaces();
+		Hyprland.refreshMonitors();
 	}
 }
