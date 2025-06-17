@@ -1,84 +1,52 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 
+import "root:/config"
+import "root:/svc"
+
 Canvas {
 	id: switcher
 
-	width: 80
-	height: 26 * Math.ceil((Hyprland.workspaces.values.length + 1) / 3)
+	width: Opts.workspace.cellSize * Opts.workspace.columns
+	height: Opts.workspace.cellSize * Math.ceil((Hyprland.workspaces.values.length + (plus.visible ? 1 : 0)) / Opts.workspace.columns)
 
 	anchors.topMargin: 8
 	anchors.top: parent.top
 	anchors.horizontalCenter: parent.horizontalCenter
 
 	GridLayout {
-		columns: 3
-		rows: Math.ceil(Hyprland.workspaces.values.length / 3)
+		id: grid
+		columns: Opts.workspace.columns
+		rows: Math.ceil(Hypr.workspaces.values.length / Opts.workspace.columns)
 		width: parent.width
 		height: parent.height
 
-		Workspace {
-			idx: 0
-			label: "α"
+		Repeater {
+			model: Hypr.workspaces.values.length
+
+			Workspace {
+				required property int modelData
+				idx: modelData
+				label: Opts.workspace.names[modelData] || modelData
+				isMax: false
+			}
 		}
 
 		Workspace {
-			idx: 1
-			label: "β"
+			id: plus
+			idx: Hypr.workspaces.values.length + 1
+			label: "+"
+			isMax: true
+			visible: Hypr.workspaces.values.reduce((acc, cur) => acc + (cur.lastIpcObject.windows == "0") ? 1 : 0, 0) == 0
 		}
 
-		Workspace {
-			idx: 2
-			label: "δ"
-		}
-
-		Workspace {
-			idx: 3
-			label: "ζ"
-		}
-
-		Workspace {
-			idx: 4
-			label: "ξ"
-		}
-
-		Workspace {
-			idx: 5
-			label: "ϟ"
-		}
-
-		Workspace {
-			idx: 6
-			label: "λ"
-		}
-
-		Workspace {
-			idx: 7
-			label: "π"
-		}
-
-		Workspace {
-			idx: 8
-			label: "μ"
-		}
-
-		Workspace {
-			idx: 9
-			label: "τ"
-		}
-
-		Workspace {
-			idx: 10
-			label: "ω"
-		}
-
-		Workspace {
-			idx: 11
-			label: "ϰ"
+		ToolTip {
+			id: tooltip_
 		}
 	}
 }
