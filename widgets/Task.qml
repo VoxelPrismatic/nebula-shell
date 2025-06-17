@@ -38,14 +38,21 @@ Rectangle {
 	function locateIcon() {
 		var bestEntry = null;
 		var bestSimilarity = 0;
-		const initialTitle = Tiles.tiles.find(t => t.wmClass == root.app.appId).initialTitle;
+		const tile = Tiles.tiles.find(t => t.wmClass == root.app.appId);
+		const against = {
+			"name": [tile.initialTitle, tile.title]
+		};
 		for (var entry of DesktopEntries.applications.values) {
-			if (!entry.name)
-				continue;
-			var similarity = jaccardSimilarity(initialTitle, entry.name);
-			if (similarity > bestSimilarity) {
-				bestSimilarity = similarity;
-				bestEntry = entry;
+			for (var key in against) {
+				if (!entry[key])
+					continue;
+				for (var val of against[key]) {
+					var similarity = jaccardSimilarity(val, entry[key]);
+					if (similarity > bestSimilarity) {
+						bestSimilarity = similarity;
+						bestEntry = entry;
+					}
+				}
 			}
 		}
 		if (bestEntry) {
@@ -61,16 +68,15 @@ Rectangle {
 	Button {
 		id: ico
 		width: 24
-		height: 24
+		height: ico.width
 		anchors.centerIn: parent
 		icon {
 			name: root.entry?.icon || root.locateIcon()
-			width: 24
-			height: 24
+			width: ico.height
+			height: ico.width
 		}
 		flat: true
 		padding: 0
-		smooth: false
 	}
 
 	Rectangle {
@@ -91,7 +97,7 @@ Rectangle {
 		property int targetId
 		onHoveredChanged: function () {
 			if (area.containsMouse) {
-				ToolTip.show(root.entry.name || root.app.title || root.app.appId);
+				ToolTip.show(root.entry?.name || root.app.title || root.app.appId);
 			} else {
 				ToolTip.hide();
 			}
