@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import "root:/config"
 
 Rectangle {
@@ -94,13 +95,23 @@ Rectangle {
 		anchors.fill: parent
 		cursorShape: Qt.PointingHandCursor
 		hoverEnabled: true
-		property int targetId
+		property int idx: 0
 		onHoveredChanged: function () {
 			if (area.containsMouse) {
 				ToolTip.show(root.entry?.name || root.app.title || root.app.appId);
 			} else {
 				ToolTip.hide();
 			}
+		}
+		onClicked: {
+			const siblings = Tiles.tiles.filter(t => t.wmClass == root.app.appId);
+			this.idx++;
+			if (this.idx >= siblings.length) {
+				this.idx = 0;
+			}
+			const sibling = siblings[idx];
+			ToolTip.show(`${idx + 1}/${siblings.length}`);
+			Hyprland.dispatch(`focuswindow address:${sibling.address}`);
 		}
 		acceptedButtons: Qt.LeftButton | Qt.RightButton
 	}
