@@ -37,6 +37,7 @@ Variants {
 			screen: root.modelData
 
 			color: Sakura.layerBase
+			WlrLayershell.layer: WlrLayer.Overlay
 
 			Workspaces {
 				id: workspaces
@@ -52,11 +53,14 @@ Variants {
 				anchors.topMargin: 8
 				anchors.top: workspace_separator.bottom
 			}
-			Clock {}
+			Clock {
+				id: clockWidget
+			}
 		}
 
 		Corner {
-			px: 12
+			id: lowerCorner
+			px: Opts.radius
 			color: Sakura.layerBase
 			botRight: true
 			anchors.right: parent.right
@@ -65,12 +69,42 @@ Variants {
 		}
 
 		Corner {
-			px: 12
-			color: Sakura.layerBase
+			id: upperCorner
+			px: Opts.radius
+			color: lowerCorner.color
 			topRight: true
-			anchors.right: parent.right
-			anchors.rightMargin: dock.width
+			anchors.right: lowerCorner.anchors.right
+			anchors.rightMargin: lowerCorner.anchors.rightMargin
 			anchors.top: parent.top
+		}
+
+		PanelWindow {
+			id: widgets
+			anchors {
+				top: true
+				bottom: true
+				right: true
+			}
+
+			implicitWidth: 512
+
+			WlrLayershell.exclusionMode: ExclusionMode.Ignore
+			color: "transparent"
+			screen: root.modelData
+			aboveWindows: this.shown
+			readonly property bool shown: notifWidget.hovered
+			margins.right: dock.implicitWidth
+
+			Behavior on aboveWindows {
+				NumberAnimation {
+duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
+				}
+			}
+
+			Notifications {
+				id: notifWidget
+				trigger: clockWidget.area_.containsMouse
+			}
 		}
 	}
 }

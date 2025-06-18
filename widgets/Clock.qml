@@ -47,8 +47,8 @@ Canvas {
 
 		Behavior on opacity {
 			NumberAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 	}
@@ -67,8 +67,8 @@ Canvas {
 
 		Behavior on color {
 			ColorAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 	}
@@ -88,8 +88,8 @@ Canvas {
 
 		Behavior on color {
 			ColorAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 	}
@@ -109,8 +109,8 @@ Canvas {
 
 		Behavior on opacity {
 			NumberAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 	}
@@ -128,8 +128,8 @@ Canvas {
 
 		Behavior on font.weight {
 			NumberAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.Duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 	}
@@ -151,8 +151,8 @@ Canvas {
 
 		Behavior on opacity {
 			NumberAnimation {
-				duration: 150
-				easing.type: Easing.InOutQuad
+				duration: Opts.aniHover.duration
+				easing.type: Opts.aniHover.style
 			}
 		}
 
@@ -216,4 +216,6 @@ Canvas {
 		hoverEnabled: true
 		anchors.fill: clock
 	}
+
+	readonly property MouseArea area_: area
 }
