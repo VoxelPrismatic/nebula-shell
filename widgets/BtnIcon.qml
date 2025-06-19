@@ -7,6 +7,7 @@ Canvas {
 	property color pressColor
 	property color hoverColor
 	property color defaultColor
+	property color fill
 	readonly property color renderColor: inPress ? pressColor : inHover ? hoverColor : defaultColor
 	readonly property bool inHover: area.containsMouse
 	readonly property bool inPress: area.containsPress
@@ -25,6 +26,7 @@ Canvas {
 			name: root.glyph
 			width: root.size
 			height: root.size
+			color: root.fill
 		}
 	}
 	MouseArea {

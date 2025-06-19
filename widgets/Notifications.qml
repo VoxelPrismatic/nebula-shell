@@ -31,10 +31,11 @@ Canvas {
 		botColor: Sakura.layerOverlay
 
 		onOpened: {
-			if (!NotifSvr.appList.includes(NotifSvr.selectedApp)) {
+			if (!NotifSvr.appNames.includes(NotifSvr.selectedApp)) {
 				NotifSvr.selectedApp += "_";
 			}
 		}
+
 		Rectangle {
 			width: appList.width + 16
 			height: parent.height
@@ -59,6 +60,7 @@ Canvas {
 				ListView {
 					model: NotifSvr.appNames
 					spacing: 4
+					reuseItems: true
 					delegate: NotificationGroup {
 						required property string modelData
 						appName: modelData
@@ -96,6 +98,7 @@ Canvas {
 				ListView {
 					model: NotifSvr.selectedNotifs
 					spacing: 4
+					reuseItems: true
 					delegate: NotificationEntry {
 						required property Notification modelData
 						notif: modelData

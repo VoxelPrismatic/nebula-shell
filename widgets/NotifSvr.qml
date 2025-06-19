@@ -9,9 +9,11 @@ Singleton {
 	id: root
 
 	readonly property list<Notification> notifs: server.trackedNotifications.values
-	readonly property list<string> appNames: notifs.sort((a, b) => b.id - a.id).map(e => e.desktopEntry).filter((e, i, s) => s.indexOf(e) == i)
-	readonly property list<Notification> selectedNotifs: notifs.filter(e => e.desktopEntry == selectedApp)
+	readonly property list<string> appNames: notifs.map(e => e.desktopEntry).filter((e, i, s) => s.lastIndexOf(e) == i).reverse()
+	readonly property list<Notification> selectedNotifs: notifs.filter(e => e.desktopEntry == selectedApp).reverse()
 	readonly property DesktopEntry entry: DesktopEntries.byId(selectedApp)
+	property list<int> opened: []
+	property list<date> timestamps: []
 	property string selectedApp: ""
 	NotificationServer {
 		id: server
@@ -26,6 +28,7 @@ Singleton {
 		persistenceSupported: true
 		onNotification: function (n) {
 			n.tracked = true;
+			root.timestamps[n.id] = new Date();
 		}
 	}
 	function selectAvailApp() {
