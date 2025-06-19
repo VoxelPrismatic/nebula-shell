@@ -46,7 +46,6 @@ Canvas {
 		}
 		Canvas {
 			id: root
-			visible: NotifSvr.selectedNotifs.length > 0
 			clip: true
 			height: content.contentBox.height - 16
 			width: content.contentBox.width - 16
@@ -67,6 +66,34 @@ Canvas {
 					}
 				}
 			}
+			Canvas {
+				anchors.centerIn: parent
+				width: childrenRect.width
+				height: childrenRect.height
+				visible: NotifSvr.notifs.length == 0
+
+				BtnIcon {
+					id: emptyBell
+					glyph: "notification-empty"
+					size: 64
+					anchors.horizontalCenter: parent.horizontalCenter
+					fill: Sakura.textNormal
+				}
+				Text {
+					id: emptyText
+					text: "No Notifications"
+					color: Sakura.textNormal
+					font {
+						pixelSize: 16
+					}
+					anchors {
+						top: emptyBell.bottom
+						topMargin: 8
+						horizontalCenter: parent.horizontalCenter
+					}
+				}
+				z: 5
+			}
 			Rectangle {
 				color: Sakura.layerBase
 				width: notifList.width
@@ -77,7 +104,7 @@ Canvas {
 			}
 			Text {
 				id: header
-				text: NotifSvr.selectedNotifs[0].appName || NotifSvr.entry.name
+				text: NotifSvr.selectedNotifs[0]?.appName || NotifSvr.entry?.name || ""
 				color: Sakura.textNormal
 				font {
 					pixelSize: 16

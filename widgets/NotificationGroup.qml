@@ -9,7 +9,7 @@ Rectangle {
 	id: root
 	required property string appName
 	readonly property DesktopEntry entry: DesktopEntries.byId(appName)
-	readonly property list<Notification> notifs: NotifSvr.notifs.filter(e => e.desktopEntry == appName)
+	readonly property int notifCount: NotifSvr.notifs.filter(e => e.desktopEntry == appName).length
 	width: parent.width
 	height: parent.width
 	color: NotifSvr.selectedApp == this.appName ? Sakura.layerInverse : area.hovered ? Sakura.hlMed : Sakura.layerSurface
@@ -52,7 +52,7 @@ Rectangle {
 	}
 	Text {
 		anchors.centerIn: ping
-		text: parent.notifs.length
+		text: root.notifCount
 
 		font {
 			pixelSize: 8
