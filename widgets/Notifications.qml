@@ -6,6 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Services.Notifications
 
 import "root:/config"
 import "root:/modules"
@@ -16,7 +17,7 @@ Canvas {
 	width: parent.width
 	height: 368
 
-	readonly property bool hovered: this.trigger || content.area_.containsMouse
+	readonly property bool hovered: content.hovered
 	required property bool trigger
 
 	anchors.bottom: parent.bottom
@@ -27,5 +28,81 @@ Canvas {
 		anchors.fill: parent
 		botAttached: true
 		topAttached: false
+		botColor: Sakura.layerOverlay
+
+		onOpened: {
+			if (!NotifSvr.appList.includes(NotifSvr.selectedApp)) {
+				NotifSvr.selectedApp += "_";
+			}
+		}
+		Rectangle {
+			width: appList.width + 16
+			height: parent.height
+			anchors.left: parent.left
+			anchors.top: parent.top
+			color: Sakura.layerOverlay
+			topLeftRadius: Opts.radius
+		}
+		Canvas {
+			id: root
+			visible: NotifSvr.selectedNotifs.length > 0
+			clip: true
+			height: content.contentBox.height - 16
+			width: content.contentBox.width - 16
+			anchors.centerIn: parent
+			ScrollView {
+				id: appList
+				anchors.left: parent.left
+				anchors.top: parent.top
+				height: parent.height
+				width: 28
+				ListView {
+					model: NotifSvr.appNames
+					spacing: 4
+					delegate: NotificationGroup {
+						required property string modelData
+						appName: modelData
+					}
+				}
+			}
+			Rectangle {
+				color: Sakura.layerBase
+				width: notifList.width
+				height: header.height + 4
+				anchors.top: header.top
+				anchors.left: header.left
+				z: 4
+			}
+			Text {
+				id: header
+				text: NotifSvr.selectedNotifs[0].appName || NotifSvr.entry.name
+				color: Sakura.textNormal
+				font {
+					pixelSize: 16
+				}
+				anchors.top: parent.top
+				anchors.left: appList.right
+				anchors.leftMargin: 16
+				z: 5
+			}
+			ScrollView {
+				id: notifList
+				anchors.left: appList.right
+				anchors.leftMargin: 4
+				anchors.top: header.bottom
+				anchors.topMargin: 4
+				height: parent.height - header.height - 4
+				width: parent.width - this.anchors.leftMargin - appList.width
+				ListView {
+					model: NotifSvr.selectedNotifs
+					spacing: 4
+					delegate: NotificationEntry {
+						required property Notification modelData
+						notif: modelData
+					}
+				}
+				z: 1
+			}
+		}
 	}
 }

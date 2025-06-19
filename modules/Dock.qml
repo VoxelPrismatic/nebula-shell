@@ -37,7 +37,6 @@ Variants {
 			screen: root.modelData
 
 			color: Sakura.layerBase
-			WlrLayershell.layer: WlrLayer.Overlay
 
 			Workspaces {
 				id: workspaces
@@ -97,7 +96,7 @@ Variants {
 
 			Behavior on aboveWindows {
 				NumberAnimation {
-duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
+					duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
 				}
 			}
 

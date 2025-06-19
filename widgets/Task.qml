@@ -41,7 +41,7 @@ Rectangle {
 		var bestSimilarity = 0;
 		const tile = Tiles.tiles.find(t => t.wmClass == root.app.appId);
 		const against = {
-			"name": [tile.initialTitle, tile.title]
+			"name": [tile?.initialTitle, tile?.title]
 		};
 		for (var entry of DesktopEntries.applications.values) {
 			for (var key in against) {
