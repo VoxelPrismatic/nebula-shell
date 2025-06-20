@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.Notifications
 import "root:/config"
@@ -7,17 +8,25 @@ Canvas {
 	id: root
 	required property Notification notif
 	readonly property bool urgent: notif.urgency == NotificationUrgency.Critical
+	readonly property DesktopEntry entry: DesktopEntries.byId(notif.desktopEntry)
+	visible: notif != null
 
 	width: parent.width
-	height: childrenRect.height
+	height: closing ? 0 : childrenRect.height
 
-	property bool open: NotifSvr.opened[notif.id] == true
+	readonly property bool floating: NotifSvr.floating[notif.id] == true
+	readonly property bool open: inFloat || NotifSvr.opened[notif.id] == true
+	property bool inFloat: false
+	property bool closing: false
 
+	Timer {}
 	Rectangle {
 		id: header
-		width: parent.width - 16
+		width: parent.width - (root.inFloat ? Opts.radius : 16)
+		anchors.top: parent.top
+		anchors.topMargin: root.inFloat ? Opts.radius / 2 : 0
 		anchors.horizontalCenter: parent.horizontalCenter
-		anchors.horizontalCenterOffset: 4
+		anchors.horizontalCenterOffset: root.inFloat ? 0 : 4
 		height: 24
 		color: root.urgent ? Sakura.paintLove : Sakura.layerOverlay
 		topLeftRadius: 4
@@ -26,56 +35,43 @@ Canvas {
 		bottomRightRadius: root.open ? 0 : 4
 	}
 
-	Rectangle {
-		id: openRect
-		width: 24
-		height: 24
+	BtnWithIcon {
+		id: openBtn
+		btnSize: 24
+		glyph: root.inFloat ? root.entry.icon : root.open ? "arrow-down" : "arrow-right"
+
 		anchors.left: header.left
 		anchors.top: header.top
 		topLeftRadius: 4
 		bottomLeftRadius: root.open ? 0 : 4
-
-		color: openBtn.renderColor
-
-		BtnIcon {
-			id: openBtn
-			size: 16
-			glyph: root.open ? "arrow-down" : "arrow-right"
-			fill: root.urgent ? Sakura.layerBase : Sakura.textNormal
-
-			anchors.centerIn: parent
-			pressColor: Sakura.hlHigh
-			hoverColor: Sakura.hlMed
-			defaultColor: Sakura.layerOverlay
-			onClick: NotifSvr.opened[root.notif.id] = !root.open
-		}
+		onClick: NotifSvr.opened[root.notif.id] = !root.open
+		fill: root.inFloat ? null : root.urgent ? Sakura.layerBase : Sakura.textNormal
 	}
-	Rectangle {
-		id: delRect
-		width: 24
-		height: 24
+	BtnWithIcon {
+		id: hideBtn
+		btnSize: 24
+		glyph: "collapse-all"
+		anchors.right: delBtn.left
+		anchors.rightMargin: -4
+		anchors.top: header.top
+		visible: root.inFloat && root.floating
+		fill: root.urgent ? Sakura.layerBase : Sakura.textNormal
+		onClick: NotifSvr.floating[root.notif.id] = false
+	}
+	BtnWithIcon {
+		id: delBtn
+		btnSize: 24
+		glyph: "dialog-close"
 		anchors.right: header.right
 		anchors.top: header.top
 		topRightRadius: 4
 		bottomRightRadius: root.open ? 0 : 4
+		fill: root.urgent ? Sakura.layerBase : Sakura.textNormal
 
-		color: delBtn.renderColor
-
-		BtnIcon {
-			id: delBtn
-			size: 16
-			glyph: "dialog-close"
-			fill: root.urgent ? Sakura.layerBase : Sakura.textNormal
-
-			anchors.centerIn: parent
-			pressColor: Sakura.hlHigh
-			hoverColor: Sakura.hlMed
-			defaultColor: Sakura.layerOverlay
-			onClick: {
-				root.notif.dismiss();
-				if (!NotifSvr.appNames.includes(NotifSvr.selectedApp)) {
-					NotifSvr.selectedApp += "_";
-				}
+		onClick: {
+			root.notif.dismiss();
+			if (!NotifSvr.appNames.includes(NotifSvr.selectedApp)) {
+				NotifSvr.selectedApp += "_";
 			}
 		}
 	}
@@ -87,13 +83,14 @@ Canvas {
 		}
 		anchors {
 			verticalCenter: header.verticalCenter
-			left: openRect.right
+			left: openBtn.right
 			leftMargin: 4
 		}
 	}
 	Rectangle {
-		visible: root.open
+		id: content
 		width: header.width
+		opacity: root.open ? 1 : 0
 		anchors {
 			left: header.left
 			top: header.bottom
@@ -104,6 +101,7 @@ Canvas {
 		bottomRightRadius: 4
 
 		Text {
+			id: contentText
 			width: header.width
 			text: root.notif.body
 			color: Sakura.textNormal
@@ -112,6 +110,27 @@ Canvas {
 			lineHeight: 1.5
 			wrapMode: Text.Wrap
 			horizontalAlignment: Text.AlignJustify
+		}
+		Behavior on height {
+			NumberAnimation {
+				duration: Opts.aniHover.duration / 2
+				easing.type: Opts.aniHover.style
+			}
+		}
+		Behavior on opacity {
+			NumberAnimation {
+				duration: Opts.aniHover.duration / 2
+				easing.type: Opts.aniHover.style
+			}
+		}
+	}
+	Canvas {
+		height: Opts.radius / 2
+		width: header.width
+		visible: root.inFloat
+		anchors {
+			left: header.left
+			bottom: root.inFloat ? root.bottom : content.bottom
 		}
 	}
 }

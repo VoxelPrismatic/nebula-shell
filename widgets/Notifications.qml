@@ -47,18 +47,25 @@ Canvas {
 		Canvas {
 			id: root
 			clip: true
-			height: content.contentBox.height - 16
+			height: content.contentBox.height
 			width: content.contentBox.width - 16
 			anchors.centerIn: parent
+			Canvas {
+				id: pad
+				height: 8
+				width: parent.width
+				anchors.top: parent.top
+				anchors.left: parent.left
+			}
 			ScrollView {
 				id: appList
 				anchors.left: parent.left
-				anchors.top: parent.top
+				anchors.top: pad.bottom
 				height: parent.height
 				width: 28
 				ListView {
 					model: NotifSvr.appNames
-					spacing: 4
+					spacing: 8
 					reuseItems: true
 					delegate: NotificationGroup {
 						required property string modelData
@@ -78,6 +85,7 @@ Canvas {
 					size: 64
 					anchors.horizontalCenter: parent.horizontalCenter
 					fill: Sakura.textNormal
+					cursor: Qt.ArrowCursor
 				}
 				Text {
 					id: emptyText
@@ -95,10 +103,11 @@ Canvas {
 				z: 5
 			}
 			Rectangle {
+				id: headerBg
 				color: Sakura.layerBase
 				width: notifList.width
-				height: header.height + 4
-				anchors.top: header.top
+				height: header.height + 8 + pad.height
+				anchors.top: parent.top
 				anchors.left: header.left
 				z: 4
 			}
@@ -109,29 +118,42 @@ Canvas {
 				font {
 					pixelSize: 16
 				}
-				anchors.top: parent.top
+				anchors.top: pad.bottom
 				anchors.left: appList.right
 				anchors.leftMargin: 16
 				z: 5
+				visible: NotifSvr.notifs.length > 0
+			}
+			BtnWithIcon {
+				btnSize: 24
+				glyph: "edit-clear-history"
+				anchors.right: notifList.right
+				anchors.rightMargin: (this.btnSize - this.iconSize) / 2
+				anchors.verticalCenter: header.verticalCenter
+				z: 5
+				radius: 4
+				onClick: NotifSvr.selectedNotifs.slice().forEach(e => e.dismiss())
+				visible: NotifSvr.notifs.length > 0
 			}
 			ScrollView {
 				id: notifList
 				anchors.left: appList.right
 				anchors.leftMargin: 4
 				anchors.top: header.bottom
-				anchors.topMargin: 4
-				height: parent.height - header.height - 4
+				anchors.topMargin: 8
+				height: parent.height - headerBg.height - 8
 				width: parent.width - this.anchors.leftMargin - appList.width
+				z: 1
 				ListView {
+					id: listNotifs
 					model: NotifSvr.selectedNotifs
-					spacing: 4
+					spacing: 8
 					reuseItems: true
 					delegate: NotificationEntry {
 						required property Notification modelData
 						notif: modelData
 					}
 				}
-				z: 1
 			}
 		}
 	}

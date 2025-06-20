@@ -6,6 +6,8 @@ import QtQuick
 Singleton {
 	id: root
 
+	readonly property int notifCount: 5
+
 	readonly property int radius: 12
 	readonly property NebulaAnimation aniWidget: NebulaAnimation {
 		duration: 150

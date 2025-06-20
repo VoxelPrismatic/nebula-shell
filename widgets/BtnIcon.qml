@@ -12,6 +12,7 @@ Canvas {
 	readonly property bool inHover: area.containsMouse
 	readonly property bool inPress: area.containsPress
 	required property string glyph
+	property int cursor: Qt.PointingHandCursor
 	width: this.size
 	height: this.size
 	signal leave
@@ -36,5 +37,6 @@ Canvas {
 		onEntered: root.hover()
 		onExited: root.leave()
 		onClicked: root.click()
+		cursorShape: root.cursor
 	}
 }
