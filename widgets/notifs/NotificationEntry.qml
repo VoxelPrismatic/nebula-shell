@@ -3,6 +3,7 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.Notifications
 import "root:/config"
+import "root:/modules"
 
 Canvas {
 	id: root
@@ -19,7 +20,6 @@ Canvas {
 	property bool inFloat: false
 	property bool closing: false
 
-	Timer {}
 	Rectangle {
 		id: header
 		width: parent.width - (root.inFloat ? Opts.radius : 16)
@@ -131,6 +131,37 @@ Canvas {
 		anchors {
 			left: header.left
 			bottom: root.inFloat ? root.bottom : content.bottom
+		}
+	}
+	Rectangle {
+		id: timeoutBar
+		width: 0
+		height: 2
+		anchors.top: header.bottom
+		anchors.topMargin: -this.height / 2
+		anchors.left: header.left
+		color: Sakura.paintRose
+		visible: root.inFloat
+		onWidthChanged: NotifSvr.widths[root.notif.id] = width
+	}
+	Timer {
+		id: floatTimeout
+		running: timeoutBar.width > 0
+		repeat: true
+		interval: 10
+		property real step: header.width * interval / Opts.notifTimeout
+		onTriggered: {
+			timeoutBar.width -= step;
+			if (timeoutBar.width <= 0) {
+				NotifSvr.floating[root.notif.id] = null;
+			}
+		}
+	}
+	onNotifChanged: {
+		if (NotifSvr.widths[root.notif.id]) {
+			timeoutBar.width = NotifSvr.widths[root.notif.id];
+		} else {
+			timeoutBar.width = header.width;
 		}
 	}
 }

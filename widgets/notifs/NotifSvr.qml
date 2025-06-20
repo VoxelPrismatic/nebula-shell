@@ -16,6 +16,7 @@ Singleton {
 	property list<bool> opened: []
 	property list<date> timestamps: []
 	property list<bool> floating: []
+	property list<real> widths: []
 	property string selectedApp: ""
 	NotificationServer {
 		id: server
@@ -34,6 +35,7 @@ Singleton {
 			if (!n.lastGeneration) {
 				root.floating[n.id] = true;
 			}
+			root.selectAvailApp();
 		}
 	}
 	function selectAvailApp() {

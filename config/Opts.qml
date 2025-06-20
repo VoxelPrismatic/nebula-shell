@@ -7,6 +7,7 @@ Singleton {
 	id: root
 
 	readonly property int notifCount: 5
+	readonly property int notifTimeout: 5000
 
 	readonly property int radius: 12
 	readonly property NebulaAnimation aniWidget: NebulaAnimation {

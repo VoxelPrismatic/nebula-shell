@@ -6,6 +6,9 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
+import "root:/widgets/spaces"
+import "root:/widgets/taskman"
+import "root:/widgets/notifs"
 import "root:/widgets"
 import "root:/config"
 

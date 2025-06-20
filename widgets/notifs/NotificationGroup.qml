@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Services.Notifications
 
+import "root:/modules"
 import "root:/config"
 
 Rectangle {
