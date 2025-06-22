@@ -21,7 +21,7 @@ Variants {
 		required property ShellScreen modelData
 		screen: modelData
 		WlrLayershell.exclusionMode: ExclusionMode.Ignore
-		WlrLayershell.layer: WlrLayer.Bottom
+		WlrLayershell.layer: WlrLayer.Background
 		color: "transparent"
 		anchors {
 			top: true
@@ -30,6 +30,37 @@ Variants {
 			left: true
 		}
 
+		PanelWindow {
+			id: widgets
+			anchors {
+				top: true
+				bottom: true
+				right: true
+			}
+
+			implicitWidth: 512
+
+			WlrLayershell.exclusionMode: ExclusionMode.Ignore
+			WlrLayershell.layer: parent.containsMouse ? WlrLayer.Top : WlrLayer.Overlay
+			color: "transparent"
+			screen: root.modelData
+			aboveWindows: this.shown
+			readonly property bool shown: notifWidget.hovered
+			margins.right: dock.implicitWidth
+
+			Behavior on aboveWindows {
+				NumberAnimation {
+					duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
+				}
+			}
+
+			onShownChanged: NotifSvr.floating = []
+
+			Notifications {
+				id: notifWidget
+				trigger: clockWidget.area_.containsMouse
+			}
+		}
 		PanelWindow {
 			id: dock
 			anchors {
@@ -42,6 +73,13 @@ Variants {
 			screen: root.modelData
 
 			color: Sakura.layerBase
+			// WlrLayershell.layer: WlrLayer.Bottom
+			aboveWindows: widgets.shown
+			Behavior on aboveWindows {
+				NumberAnimation {
+					duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
+				}
+			}
 
 			Workspaces {
 				id: workspaces
@@ -126,37 +164,6 @@ Variants {
 			anchors.right: lowerCorner.anchors.right
 			anchors.rightMargin: lowerCorner.anchors.rightMargin
 			anchors.top: parent.top
-		}
-
-		PanelWindow {
-			id: widgets
-			anchors {
-				top: true
-				bottom: true
-				right: true
-			}
-
-			implicitWidth: 512
-
-			WlrLayershell.exclusionMode: ExclusionMode.Ignore
-			color: "transparent"
-			screen: root.modelData
-			aboveWindows: this.shown
-			readonly property bool shown: notifWidget.hovered
-			margins.right: dock.implicitWidth
-
-			Behavior on aboveWindows {
-				NumberAnimation {
-					duration: widgets.shown ? Opts.aniWidget.duration + 50 : 0
-				}
-			}
-
-			onShownChanged: NotifSvr.floating = []
-
-			Notifications {
-				id: notifWidget
-				trigger: clockWidget.area_.containsMouse
-			}
 		}
 	}
 }
