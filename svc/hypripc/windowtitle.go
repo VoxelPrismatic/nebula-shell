@@ -9,18 +9,18 @@ type IpcWindowTitle struct {
 	hyprctl.HyprWindowRef
 }
 
-func (win *IpcWindowTitle) Update(event, value string) bool {
-	win.updates++
+func (obj *IpcWindowTitle) Update(event, value string) bool {
+	obj.updates++
 	switch event {
 	case "windowtitle":
 		break
 	case "windowtitlev2":
 		parts := mustSplitN(value, 2)
-		win.Address = parts[0]
-		win.Title = parts[1]
+		obj.Address = parts[0]
+		obj.Title = parts[1]
 	default:
 		panic("wrong event: " + event)
 	}
 
-	return win.updates == 2
+	return obj.updates == 2
 }

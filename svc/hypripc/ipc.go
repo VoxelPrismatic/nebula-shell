@@ -221,7 +221,7 @@ func (ipc *IpcListener) Connect() error {
 		if err != nil {
 			return err
 		}
-		parts := strings.SplitN(line[len("Event: "):len(line)-1], ">>", 2)
+		parts := strings.SplitN(line[:len(line)-1], ">>", 2)
 		if len(parts) != 2 {
 			return fmt.Errorf("spec changed; line=%s", line)
 		}

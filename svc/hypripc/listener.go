@@ -1,6 +1,9 @@
 package hypripc
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
 
 type Listenable[R any] interface {
 	Update(event, value string) bool
@@ -20,8 +23,19 @@ func (lis *EventListener[T, R]) Add(cb func(T)) {
 }
 
 func (lis *EventListener[T, R]) update(event, value string) {
-	if lis.store == nil {
-		lis.store = new(T)
+	if lis.store == nil || reflect.ValueOf(*lis.store).IsNil() {
+		underlying := reflect.TypeOf((*T)(nil)).Elem()
+		for underlying.Kind() == reflect.Ptr {
+			underlying = underlying.Elem()
+		}
+		if underlying.Kind() != reflect.Struct {
+			panic("*listenable must be a struct, got " + underlying.Kind().String())
+		}
+		inst, ok := reflect.New(underlying).Interface().(T)
+		if !ok {
+			panic("failed to make event store")
+		}
+		lis.store = &inst
 	}
 	if (*lis.store).Update(event, value) {
 		fire(lis.store, lis.listeners)
