@@ -18,6 +18,9 @@ Canvas {
 	signal leave
 	signal hover
 	signal click
+	signal dblClick
+	signal press
+	signal release
 	Button {
 		width: root.size
 		height: root.size
@@ -37,6 +40,9 @@ Canvas {
 		onEntered: root.hover()
 		onExited: root.leave()
 		onClicked: root.click()
+		onDoubleClicked: root.dblClick()
+		onPressed: root.press()
+		onReleased: root.release()
 		cursorShape: root.cursor
 	}
 }

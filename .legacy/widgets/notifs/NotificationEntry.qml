@@ -39,12 +39,12 @@ Canvas {
 		id: openBtn
 		btnSize: 24
 		glyph: root.inFloat ? root.entry.icon : root.open ? "arrow-down" : "arrow-right"
-
+		cursor: Qt.PointingHandCursor
 		anchors.left: header.left
 		anchors.top: header.top
 		topLeftRadius: 4
 		bottomLeftRadius: root.open ? 0 : 4
-		onClick: NotifSvr.opened[root.notif.id] = !root.open
+		onPress: NotifSvr.opened[root.notif.id] = !root.open
 		fill: root.inFloat ? null : root.urgent ? Sakura.layerBase : Sakura.textNormal
 	}
 	BtnWithIcon {

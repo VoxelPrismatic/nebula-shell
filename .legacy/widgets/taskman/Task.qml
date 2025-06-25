@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "root:/config"
+import "root:/widgets/spaces"
 
 Rectangle {
 	id: root
@@ -12,8 +13,12 @@ Rectangle {
 
 	property DesktopEntry entry: DesktopEntries.byId(app.appId)
 
-	width: parent.width / 3 - 4
+	readonly property Tiles.Tile tile: Tiles.tiles.find(t => t.wmClass == root.app.appId || t.title == root.app.appId)
+	visible: CurrentWs.hovered == -1 || Tiles.tiles.find(t => (t.wmClass == root.app.appId || t.title == root.app.appId) && t.workspace.id == CurrentWs.hovered) ? 1 : 0
+
+	width: Opts.workspace.cellSize - 4
 	height: this.width
+	property real confidence: 0
 
 	color: Sakura.layerBase
 	radius: 4
@@ -27,21 +32,23 @@ Rectangle {
 	}
 
 	function jaccardSimilarity(str1: string, str2: string): double {
-		var words1 = str1.toLowerCase().split(/\s+/);
-		var words2 = str2.toLowerCase().split(/\s+/);
+		var words1 = str1.toLowerCase().split(/\W+/g);
+		var words2 = str2.toLowerCase().split(/\W+/g);
 		var set1 = new Set(words1);
 		var set2 = new Set(words2);
 		var intersection = new Set([...set1].filter(x => set2.has(x)));
 		var union = new Set([...set1, ...set2]);
+		if (words1[0] != words2[0]) {
+			return intersection.size / union.size / 2;
+		}
 		return intersection.size / union.size;
 	}
 
 	function locateIcon() {
 		var bestEntry = null;
 		var bestSimilarity = 0;
-		const tile = Tiles.tiles.find(t => t.wmClass == root.app.appId);
 		const against = {
-			"name": [tile?.initialTitle, tile?.title]
+			"name": [tile?.initialClass, tile?.initialTitle, tile?.title]
 		};
 		for (var entry of DesktopEntries.applications.values) {
 			for (var key in against) {
@@ -60,6 +67,7 @@ Rectangle {
 			var iconFromEntry = Quickshell.iconPath(bestEntry.icon, false);
 			if (iconFromEntry !== "") {
 				root.entry = bestEntry;
+				root.confidence = bestSimilarity;
 				return bestEntry.icon;
 			}
 		}
@@ -98,7 +106,11 @@ Rectangle {
 		property int idx: 0
 		onHoveredChanged: function () {
 			if (area.containsMouse) {
-				ToolTip.show(root.entry?.name || root.app.title || root.app.appId);
+				let title = root.entry?.name || root.tile.initialClass || root.app.title;
+				// if (root.confidence > 0) {
+				// title = Math.round(root.confidence * 100) + "%: " + title;
+				// }
+				ToolTip.show(title);
 			} else {
 				ToolTip.hide();
 			}

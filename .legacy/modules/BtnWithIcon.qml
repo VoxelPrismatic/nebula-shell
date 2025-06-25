@@ -13,6 +13,11 @@ Rectangle {
 	property int cursor
 
 	signal click
+	signal dblClick
+	signal press
+	signal release
+	signal hover
+	signal leave
 	width: btnSize
 	height: btnSize
 
@@ -30,5 +35,9 @@ Rectangle {
 		hoverColor: root.hoverColor
 		defaultColor: root.defaultColor
 		onClick: root.click()
+		onPress: root.press()
+		onRelease: root.release()
+		onHover: root.hover()
+		onLeave: root.leave()
 	}
 }

@@ -132,7 +132,10 @@ Canvas {
 				anchors.verticalCenter: header.verticalCenter
 				z: 5
 				radius: 4
-				onClick: NotifSvr.selectedNotifs.slice().forEach(e => e.dismiss())
+				onClick: {
+					NotifSvr.selectedNotifs.slice().forEach(e => e.dismiss());
+					NotifSvr.selectedApp += "_";
+				}
 				visible: NotifSvr.notifs.length > 0
 			}
 			ScrollView {

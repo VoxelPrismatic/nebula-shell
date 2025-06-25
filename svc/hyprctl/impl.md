@@ -1,0 +1,35 @@
+- [x] activewindow
+- [x] activeworkspace
+- [ ] animations
+- [x] binds
+- [x] clients
+- [ ] configerrors
+- [ ] cursorpos
+- [ ] decorations <window_regex>
+- [x] devices
+- [ ] dismissnotify [amount]
+- [ ] dispatch <dispatcher> [args]
+- [ ] getoption <option>
+- [ ] globalshortcuts
+- [ ] hyprpaper ...
+- [ ] hyprsunset ...
+- [x] instances
+- [ ] keyword <name> <value>
+- [ ] kill
+- [x] layers
+- [x] layouts
+- [x] monitors
+- [ ] notify ...
+- [ ] output ...
+- [ ] plugin ...
+- [ ] reload [config-only]
+- [x] rollinglog
+- [ ] setcursor <theme> <size>
+- [ ] seterror <color> <message...>
+- [ ] setprop ...
+- [x] splash
+- [ ] switchxkblayout ...
+- [ ] systeminfo
+- [ ] version
+- [ ] workspacerules
+- [x] workspaces

@@ -46,6 +46,8 @@ Rectangle {
 		cursorShape: Qt.PointingHandCursor
 		hoverEnabled: true
 		property int targetId
+		onEntered: CurrentWs.hovered = root.ws?.id || -1
+		onExited: CurrentWs.hovered = -1
 		onHoveredChanged: {
 			this.targetId = root.ws?.id || 0;
 			if (!parent.isMax)

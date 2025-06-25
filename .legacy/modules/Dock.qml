@@ -30,6 +30,11 @@ Variants {
 			left: true
 		}
 
+		MouseArea {
+			id: shaker
+			anchors.fill: parent
+		}
+
 		PanelWindow {
 			id: widgets
 			anchors {
@@ -41,7 +46,7 @@ Variants {
 			implicitWidth: 512
 
 			WlrLayershell.exclusionMode: ExclusionMode.Ignore
-			WlrLayershell.layer: parent.containsMouse ? WlrLayer.Top : WlrLayer.Overlay
+			WlrLayershell.layer: this.containsMouse ? WlrLayer.Top : WlrLayer.Overlay
 			color: "transparent"
 			screen: root.modelData
 			aboveWindows: this.shown
@@ -100,7 +105,32 @@ Variants {
 			}
 		}
 
-		Instantiator {
+		PopupWindow {
+			id: floatNotifs
+			anchor {
+				// window:
+				edges: Edges.Right | Edges.Bottom
+				gravity: Edges.Right | Edges.Top
+				margins {
+					left: 0
+					right: 0
+					top: 0
+					bottom: 0
+				}
+			}
+			implicitWidth: 512
+			implicitHeight: 512
+			// WlrLayershell.layer: WlrLayer.Overlay
+		}
+
+		// NotificationFloat {
+		// anchor.window: root
+		// anchor.rect.x: root.width - dock.width
+		// anchor.rect.y: root.height - this.height
+		// // WlrLayershell.layer: WlrLayer.Top
+		// }
+
+		/*Instantiator {
 			id: notifPopupList
 			model: Opts.notifCount
 			PopupWindow {
@@ -108,11 +138,6 @@ Variants {
 				required property int modelData
 				property int notifPad: Opts.radius * 3
 				// visible: true
-				anchor.window: root
-				anchor.rect.x: root.width - dock.width - this.width - 8 + Opts.radius / 2 + notifPad / 2
-				anchor.rect.y: previousY - notifBox.height
-				anchor.rect.width: notifBox.height
-				anchor.rect.height: notifBox.width
 				property var previousElement: notifPopupList.objectAt(modelData - 1)
 				property int previousY: previousElement ? previousElement.anchor.rect.y : root.height + Opts.radius / 2 - notifPad / 2 - 8
 				implicitWidth: notifBox.width + notifPad
@@ -144,7 +169,7 @@ Variants {
 					}
 				}
 			}
-		}
+}*/
 
 		Corner {
 			id: lowerCorner

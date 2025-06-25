@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Wayland
 
 import "root:/config"
+import "root:/widgets/spaces"
 
 Canvas {
 	id: switcher
@@ -18,7 +19,7 @@ Canvas {
 	}).filter(e => e)
 
 	width: Opts.workspace.cellSize * Opts.workspace.columns
-	height: (Opts.workspace.cellSize * Math.max(1, Math.ceil((apps.length) / Opts.workspace.columns)))
+	height: childrenRect.height
 
 	anchors.topMargin: 8
 	anchors.top: parent.top
@@ -27,9 +28,7 @@ Canvas {
 	GridLayout {
 		id: grid
 		columns: Opts.workspace.columns
-		rows: Math.ceil(switcher.apps.length / Opts.workspace.columns)
-		width: parent.width
-		height: parent.height
+		anchors.fill: parent
 
 		Repeater {
 			model: switcher.apps
@@ -42,9 +41,9 @@ Canvas {
 		}
 
 		Repeater {
-			model: 3 - switcher.apps.length
+			model: 3 + (3 - switcher.apps.length % 3)
 			Rectangle {
-				width: Opts.workspace.cellSize
+				width: Opts.workspace.cellSize - 4
 				height: this.width
 				opacity: 0
 			}
