@@ -24,7 +24,8 @@ const (
 )
 
 const (
-	AnchorTop Anchor = 1 << iota
+	AnchorNone Anchor = 0
+	AnchorTop  Anchor = 1 << (iota - 1)
 	AnchorBottom
 	AnchorLeft
 	AnchorRight
@@ -53,7 +54,7 @@ func MakeWindow(target *qt6.QWindow) *Window {
 	return &Window{target}
 }
 
-func (win *Window) WlrSetAnchors(anchors Anchor) {
+func (win *Window) SetWlrAnchors(anchors Anchor) {
 	C.WinSetAnchors(win.UnsafePointer(), C.int(anchors))
 }
 
@@ -81,6 +82,10 @@ func (win *Window) SetWlrMargins(margins *qt6.QMargins) {
 	C.WinSetMargins(win.UnsafePointer(), margins.UnsafePointer())
 }
 
+func (win *Window) SetWlrMargins2(left, top, right, bottom int) {
+	win.SetWlrMargins(qt6.NewQMargins2(left, top, right, bottom))
+}
+
 func (win *Window) WlrMargins() *qt6.QMargins {
 	ptr := C.WinGetMargins(win.UnsafePointer())
 	if ptr == nil {
@@ -92,6 +97,10 @@ func (win *Window) WlrMargins() *qt6.QMargins {
 
 func (win *Window) SetWlrDesiredSize(size *qt6.QSize) {
 	C.WinSetDesiredSize(win.UnsafePointer(), size.UnsafePointer())
+}
+
+func (win *Window) SetWlrDesiredSize2(w, h int) {
+	win.SetWlrDesiredSize(qt6.NewQSize2(w, h))
 }
 
 func (win *Window) WlrDesiredSize() *qt6.QSize {
