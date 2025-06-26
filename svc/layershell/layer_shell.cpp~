@@ -1,0 +1,176 @@
+#include <LayerShellQt/shell.h>
+#include <LayerShellQt/window.h>
+#include <QObject>
+#include <QScreen>
+#include <QString>
+#include <QWindow>
+#include <cstdlib>
+#include <cstring>
+#include <stdint.h>
+
+LayerShellQt::Window *WinCast(void *window) {
+	QWindow *qwindow = static_cast<QWindow *>(window);
+	LayerShellQt::Window *lsWindow = LayerShellQt::Window::get(qwindow);
+	return lsWindow;
+}
+
+extern "C" {
+void UseLayerShell() { LayerShellQt::Shell::useLayerShell(); }
+
+void WinSetAnchors(void *window, int anchors) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setAnchors(static_cast<LayerShellQt::Window::Anchor>(anchors));
+}
+
+int WinGetAnchors(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->anchors();
+}
+
+void WinSetExclusionZone(void *window, int32_t zone) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setExclusiveZone(zone);
+}
+
+int32_t WinGetExclusionZone(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->exclusionZone();
+}
+
+void WinSetExclusiveEdge(void *window, int edge) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setExclusiveEdge(static_cast<LayerShellQt::Window::Anchor>(edge));
+}
+
+int WinGetExclusiveEdge(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->exclusiveEdge();
+}
+
+void WinSetMargins(void *window, void *margins) {
+	QMargins *inter = static_cast<QMargins *>(margins);
+	const QMargins &qmargins = static_cast<QMargins &>(*inter);
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setMargins(qmargins);
+}
+
+void *WinGetMargins(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow) {
+		return NULL;
+	}
+	QMargins *ret = static_cast<QMargins *>(malloc(sizeof(QMargins)));
+	*ret = lsWindow->margins();
+	return ret;
+}
+
+void WinSetDesiredSize(void *window, void *size) {
+	QSize *inter = static_cast<QSize *>(size);
+	const QSize &qsize = static_cast<QSize &>(*inter);
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setDesiredSize(qsize);
+}
+
+void *WinGetDesiredSize(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow) {
+		return NULL;
+	}
+	QSize *ret = static_cast<QSize *>(malloc(sizeof(QSize)));
+	*ret = lsWindow->desiredSize();
+	return ret;
+}
+
+void WinSetKeyboardInteractivity(void *window, int kbd) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setKeyboardInteractivity(static_cast<LayerShellQt::Window::KeyboardInteractivity>(kbd));
+}
+
+int WinGetKeyboardInteractivity(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->keyboardInteractivity();
+}
+
+void WinSetLayer(void *window, int layer) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setLayer(static_cast<LayerShellQt::Window::Layer>(layer));
+}
+
+int WinGetLayer(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->layer();
+}
+
+void WinSetScreenConfiguration(void *window, int config) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setScreenConfiguration(static_cast<LayerShellQt::Window::ScreenConfiguration>(config));
+}
+
+int WinGetScreenConfiguration(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return -1;
+	return lsWindow->screenConfiguration();
+}
+
+void WinSetScope(void *window, char *str) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	const QString &qStr = QString::fromUtf8(str);
+	lsWindow->setScope(qStr);
+}
+
+char *WinGetScope(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return NULL;
+	const QString scope = lsWindow->scope();
+	const int len = scope.size();
+	char *buf = static_cast<char *>(malloc(len));
+	strncpy(buf, scope.toUtf8().data(), len);
+	return buf;
+}
+
+void FreeBuf(void *buf) { free(buf); }
+
+void WinSetCloseOnDismissed(void *window, bool close) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return;
+	lsWindow->setCloseOnDismissed(close);
+}
+
+bool WinGetCloseOnDismissed(void *window) {
+	LayerShellQt::Window *lsWindow = WinCast(window);
+	if(!lsWindow)
+		return false;
+	return lsWindow->closeOnDismissed();
+}
+}

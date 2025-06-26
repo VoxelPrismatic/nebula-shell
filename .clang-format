@@ -1,0 +1,6 @@
+UseTab: Always
+TabWidth: 4
+IndentWidth: 4
+ColumnLimit: 120
+AlignAfterOpenBracket: "BlockIndent"
+SpaceBeforeParens: "Never"
