@@ -1,7 +1,10 @@
 package dock
 
 import (
+	"nebula-shell/shell/corner"
+	"nebula-shell/shell/qtplus"
 	"nebula-shell/shell/shared"
+	"nebula-shell/shell/spaces"
 	"nebula-shell/svc/layershell"
 
 	"github.com/mappu/miqt/qt6"
@@ -28,6 +31,10 @@ func NewDock(screen *qt6.QScreen) {
 	wlr.SetWlrExclusionZone(int32(shared.Width))
 	window.SetGeometry(rect.X()+rect.Width()-w, rect.Y()+rect.Height()-h, w, h)
 
+	style := &qtplus.Stylesheet{}
+	ret := &corner.Dock{}
+	corner.Docks[screen.Name()] = ret
+
 	thing := qt6.NewQHBoxLayout(window)
 	thing.SetContentsMargins(0, 0, 0, 0)
 	thing.SetSpacing(0)
@@ -36,18 +43,31 @@ func NewDock(screen *qt6.QScreen) {
 	radiusWidget.SetContentsMargins(0, 0, 0, 0)
 	radiusLayout := qt6.NewQVBoxLayout(radiusWidget)
 	radiusLayout.SetContentsMargins(0, 0, 0, 0)
-	// radiusWidget.SetFixedSize2(shared.Radius, h)
-	// radiusWidget.SetFixedWidth(shared.Radius * 2)
 	radiusWidget.SetFixedHeight(h)
-	radiusLayout.AddWidget(NewCorner(shared.Radius, CornerTopRight).QWidget)
+
+	c := corner.NewCorner(shared.Radius, corner.CornerTopRight)
+	c.Color = shared.Theme.Dawn.Layer.Base
+	ret.UpperCorner = c
+	radiusLayout.AddWidget(c.QWidget)
 	radiusLayout.AddStretch()
-	radiusLayout.AddWidget(NewCorner(shared.Radius, CornerBotRight).QWidget)
+	c = corner.NewCorner(shared.Radius, corner.CornerBotRight)
+	c.Color = shared.Theme.Dawn.Layer.Base
+	ret.LowerCorner = c
+	radiusLayout.AddWidget(c.QWidget)
 	thing.AddWidget(radiusWidget)
 
 	contentWidget := qt6.NewQWidget(nil)
 	contentWidget.SetContentsMargins(0, 0, 0, 0)
 	contentWidget.SetFixedSize2(shared.Width, h)
 	contentLayout := qt6.NewQVBoxLayout(contentWidget)
-	contentLayout.ParentWidget().SetStyleSheet("background-color: " + shared.Theme.Dawn.Layer.Base)
+	ret.Content = contentLayout
+	ret.Style = style
+	style.AddTarget(contentLayout.ParentWidget())
+	style.Set("background-color", shared.Theme.Dawn.Layer.Base)
+	gap := shared.Grid.Margin
+	contentLayout.SetContentsMargins(gap, gap, gap, gap)
 	thing.AddWidget(contentWidget)
+
+	contentLayout.AddWidget(spaces.NewGrid(screen).Widget)
+	contentLayout.AddStretch()
 }

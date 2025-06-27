@@ -1,15 +1,14 @@
-package dock
+package corner
 
 import (
-	"nebula-shell/shell/shared"
-
 	"github.com/mappu/miqt/qt6"
 )
 
 type CornerRadius struct {
 	*qt6.QWidget
 
-	Size int
+	Size  int
+	Color string
 }
 
 type Corners int
@@ -51,9 +50,8 @@ func NewCorner(size int, corners Corners) *CornerRadius {
 
 	invPath := sqPath.Subtracted(ccPath).Subtracted(negPath)
 
-	brush := qt6.NewQBrush3(qt6.NewQColor6(shared.Theme.Dawn.Layer.Base))
-
 	ret.OnPaintEvent(func(super func(event *qt6.QPaintEvent), event *qt6.QPaintEvent) {
+		brush := qt6.NewQBrush3(qt6.NewQColor6(ret.Color))
 		p := qt6.NewQPainter2(ret.QPaintDevice)
 		p.SetRenderHint(qt6.QPainter__Antialiasing)
 		p.FillPath(invPath, brush)

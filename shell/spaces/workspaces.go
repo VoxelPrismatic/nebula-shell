@@ -1,40 +1,153 @@
 package spaces
 
 import (
+	"fmt"
+	"log"
+	"nebula-shell/shell/shared"
 	"nebula-shell/svc/hyprctl"
+	"nebula-shell/svc/hypripc"
+	"sync"
 
 	"github.com/mappu/miqt/qt6"
+	"github.com/mappu/miqt/qt6/mainthread"
 )
 
 type WorkspaceGrid struct {
-	Monitor *qt6.QScreen
-	Entries []WorkspaceEntry
-	Widget  *qt6.QWidget
-	Grid    *qt6.QGridLayout
+	LockRefresh *sync.Mutex
+	LockEntry   *sync.Mutex
+	Monitor     *qt6.QScreen
+	Entries     []*WorkspaceEntry
+	Widget      *qt6.QWidget
+	Grid        *qt6.QGridLayout
+	Plus        *WorkspaceEntry
 }
 
 var gridCache = map[string]*WorkspaceGrid{}
+var curWinAddr string
 
 func NewGrid(screen *qt6.QScreen) *WorkspaceGrid {
+	go wsCache.Refresh()
 	if ret, ok := gridCache[screen.Name()]; ok {
 		return ret
 	}
 	w := qt6.NewQWidget2()
+	w.SetFixedWidth(shared.Grid.InnerWidth())
+	w.SetContentsMargins(0, 0, 0, 0)
 	g := &WorkspaceGrid{
-		Monitor: screen,
-		Widget:  w,
-		Grid:    qt6.NewQGridLayout(w),
+		Monitor:     screen,
+		Widget:      w,
+		Grid:        qt6.NewQGridLayout(w),
+		LockRefresh: &sync.Mutex{},
+		LockEntry:   &sync.Mutex{},
+	}
+	g.Grid.SetContentsMargins(0, 0, 0, 0)
+	g.Grid.SetSpacing(shared.Grid.Gap)
+	mainthread.Start(func() {
+		g.Plus = NewEntry(g.Monitor, -1, hyprctl.HyprWorkspaceRef{Id: -1}, g)
+	})
+
+	if qt6.QGuiApplication_PrimaryScreen().Name() == screen.Name() {
+		bindRefresh()
 	}
 
-	wss, err := hyprctl.Workspaces()
-	if err != nil {
-		panic(err)
-	}
+	w.OnLeaveEvent(func(super func(event *qt6.QEvent), event *qt6.QEvent) {
+		if w.UnderMouse() {
+			return
+		}
+		go wsCache.Restore()
+	})
+	w.OnEnterEvent(func(super func(event *qt6.QEnterEvent), event *qt6.QEnterEvent) {
+		go func() {
+			win, err := hyprctl.ActiveWindow()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			curWinAddr = win.Address
+		}()
+	})
 
-	for _, ws := range *wss {
-		g.Grid.AddWidget(NewEntry(screen, ws.HyprWorkspaceRef).Widget)
-	}
+	g.Refresh(nil)
 
 	gridCache[screen.Name()] = g
 	return g
+}
+
+func propRefresh() {
+	wss, err := hyprctl.Workspaces()
+	if err != nil {
+		return
+	}
+	for _, g := range gridCache {
+		go g.Refresh(wss)
+	}
+}
+
+func bindRefresh() {
+	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) {
+		propRefresh()
+	})
+
+	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) {
+		propRefresh()
+	})
+
+	shared.Ipc().EvtWorkspace.Add(func(iw *hypripc.IpcWorkspace) {
+		propRefresh()
+	})
+}
+
+func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
+	if !g.LockRefresh.TryLock() {
+		return // Refresh is already in progress
+	}
+	fmt.Println("0")
+	if wss == nil {
+		var err error
+		wss, err = hyprctl.Workspaces()
+		if err != nil {
+			panic(err)
+		}
+		if wss == nil {
+			log.Fatalf("nil workspaces")
+		}
+	}
+
+	fmt.Println("1")
+	j := 0
+	empty := false
+	for i, ws := range *wss {
+		var e *WorkspaceEntry
+		if i >= len(g.Entries) {
+			mainthread.Start(func() {
+				e = NewEntry(g.Monitor, i, ws.HyprWorkspaceRef, g)
+				g.LockEntry.Lock()
+				g.Entries = append(g.Entries, e)
+				g.LockEntry.Unlock()
+				g.Grid.AddWidget2(e.Widget, (i/3)*3, i%3)
+				fmt.Printf("+ %d\n", ws.Id)
+			})
+		} else {
+			e = g.Entries[i]
+			fmt.Printf("= %d\n", ws.Id)
+			e.SetTarget(ws.HyprWorkspaceRef)
+			mainthread.Start(func() { e.Widget.SetVisible(true) })
+			go e.SetColors()
+		}
+		empty = empty || ws.Windows == 0 && ws.Monitor == g.Monitor.Name()
+		j = i + 1
+	}
+	if j < len(g.Entries) {
+		g.LockEntry.Lock()
+		for _, e := range g.Entries[j:] {
+			fmt.Printf("- %d\n", e.Target.Id)
+			mainthread.Start(func() { e.Widget.SetVisible(false) })
+		}
+		g.LockEntry.Unlock()
+	}
+	fmt.Println("\u221a")
+	mainthread.Start(func() {
+		g.Grid.AddWidget2(g.Plus.Widget, (j/3)*3, j%3)
+		g.Plus.Widget.SetVisible(!empty)
+	})
+	g.LockRefresh.Unlock()
 }

@@ -1,6 +1,7 @@
 package qtplus
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -48,8 +49,15 @@ func (s *Stylesheet) Set(prop string, value any) {
 		i++
 	}
 	sheet := strings.Join(lines, "\n")
-	fmt.Println(sheet)
 	for _, target := range s.targets {
 		target.SetStyleSheet(sheet)
 	}
+}
+
+func (s *Stylesheet) Get(prop string) string {
+	return s.styles[prop]
+}
+
+func (s *Stylesheet) Compare(prop string, expect any) int {
+	return cmp.Compare(s.styles[prop], fmt.Sprint(expect))
 }
