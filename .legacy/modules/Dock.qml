@@ -20,7 +20,7 @@ Variants {
 		id: root
 		required property ShellScreen modelData
 		screen: modelData
-		WlrLayershell.exclusionMode: ExclusionMode.Ignore
+		WlrLayershell.exclusionMode: ExclusionMode.Normal
 		WlrLayershell.layer: WlrLayer.Background
 		color: "transparent"
 		anchors {
