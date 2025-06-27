@@ -2,6 +2,8 @@ package hyprctl
 
 import "fmt"
 
+type HyprMonitorList []HyprMonitor
+
 type HyprMonitorRef struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
@@ -35,8 +37,12 @@ type HyprMonitor struct {
 	AvailableModes   []string         `json:"availableModes"`
 }
 
-func Monitors() (*[]HyprMonitor, error) {
-	return Call[[]HyprMonitor]("monitors")
+func Monitors() (*HyprMonitorList, error) {
+	return Call[HyprMonitorList]("monitors")
+}
+
+func Monitor(name string) (*HyprMonitor, error) {
+	return HyprMonitorRef{Name: name}.Target()
 }
 
 func (mon HyprMonitorRef) Target() (*HyprMonitor, error) {
@@ -50,4 +56,13 @@ func (mon HyprMonitorRef) Target() (*HyprMonitor, error) {
 		}
 	}
 	return nil, fmt.Errorf("monitor not found")
+}
+
+func (mons *HyprMonitorList) Find(name string) *HyprMonitor {
+	for _, mon := range *mons {
+		if mon.Name == name {
+			return &mon
+		}
+	}
+	return nil
 }
