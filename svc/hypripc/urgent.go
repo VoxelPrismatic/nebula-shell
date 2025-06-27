@@ -12,7 +12,7 @@ type IpcUrgent struct {
 func (win *IpcUrgent) Update(event, value string) bool {
 	win.updates++
 	switch event {
-	case "changefloatingmode":
+	case "urgent":
 		win.Address = value
 	default:
 		panic("wrong event: " + event)

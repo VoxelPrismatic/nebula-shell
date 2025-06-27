@@ -12,7 +12,7 @@ type IpcCloseLayer struct {
 func (lay *IpcCloseLayer) Update(event, value string) bool {
 	lay.updates++
 	switch event {
-	case "openlayer":
+	case "closelayer":
 		lay.Namespace = value
 	default:
 		panic("wrong event: " + event)
