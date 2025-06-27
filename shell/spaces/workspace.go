@@ -82,25 +82,13 @@ func (c *WsCache) Restore() {
 }
 
 func (c *WsCache) Preview(t string, ws int) {
-	wsLock.Lock()
-
-	w, err := hyprctl.ActiveWorkspace()
-	if err != nil {
-		panic(err)
+	if !wsLock.TryLock() {
+		return // do not block
 	}
-
-	curMon := w.Monitor
 
 	batches := [][]any{}
-	for mon, id := range *c {
-		batches = append(batches, []any{"focusmonitor", mon})
-		if mon == t {
-			batches = append(batches, []any{"focusworkspaceoncurrentmonitor", ws})
-		} else if ws != id {
-			batches = append(batches, []any{"focusworkspaceoncurrentmonitor", id})
-		}
-	}
-	batches = append(batches, []any{"focusmonitor", curMon})
+	batches = append(batches, []any{"focusmonitor", t})
+	batches = append(batches, []any{"focusworkspaceoncurrentmonitor", ws})
 	_, _ = hyprctl.BatchDispatch(batches...)
 	wsLock.Unlock()
 }
@@ -144,28 +132,29 @@ func NewEntry(mon *qt6.QScreen, idx int, ref hyprctl.HyprWorkspaceRef, parent *W
 		if id == -1 {
 			id = getMaxWsId()
 		}
+		batches := [][]any{}
 		switch event.Button() {
 		case qt6.RightButton:
-			_, _ = hyprctl.Dispatch("focuswindow", "address:"+curWinAddr)
-			_, _ = hyprctl.Dispatch("movetoworkspace", id)
+			batches = append(batches, []any{"focuswindow", "address:" + curWinAddr})
+			batches = append(batches, []any{"movetoworkspace", id})
 			fallthrough
 		case qt6.LeftButton:
 			wsLock.Lock()
 			wsCache[monName] = id
 			wsLock.Unlock()
-			_, _ = hyprctl.Dispatch("focusworkspaceoncurrentmonitor", id)
+			batches = append(batches, []any{"focusworkspaceoncurrentmonitor", id})
 		case qt6.MiddleButton:
-			_, _ = hyprctl.Dispatch("focuswindow", "address:"+curWinAddr)
-			_, _ = hyprctl.Dispatch("movetoworkspacesilent", id)
+			batches = append(batches, []any{"focuswindow", "address:" + curWinAddr})
+			batches = append(batches, []any{"movetoworkspacesilent", id})
 		}
+		go func() {
+			_, _ = hyprctl.BatchDispatch(batches...)
+		}()
 		// workspace.Parent.Refresh(nil)
 	})
 	w.OnEnterEvent(func(super func(event *qt6.QEnterEvent), event *qt6.QEnterEvent) {
 		if workspace.Target.Id != -1 {
-			_, _ = hyprctl.BatchDispatch([][]any{
-				{"focusmonitor", monName},
-				{"focusworkspaceoncurrentmonitor", workspace.Target.Id},
-			}...)
+			go wsCache.Preview(monName, workspace.Target.Id)
 		}
 		workspace.SetColors()
 	})

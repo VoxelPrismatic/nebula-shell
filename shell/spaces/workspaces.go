@@ -1,7 +1,6 @@
 package spaces
 
 import (
-	"fmt"
 	"log"
 	"nebula-shell/shell/shared"
 	"nebula-shell/svc/hyprctl"
@@ -100,7 +99,6 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 	if !g.LockRefresh.TryLock() {
 		return // Refresh is already in progress
 	}
-	fmt.Println("0")
 	if wss == nil {
 		var err error
 		wss, err = hyprctl.Workspaces()
@@ -112,7 +110,6 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 		}
 	}
 
-	fmt.Println("1")
 	j := 0
 	empty := false
 	for i, ws := range *wss {
@@ -124,11 +121,9 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 				g.Entries = append(g.Entries, e)
 				g.LockEntry.Unlock()
 				g.Grid.AddWidget2(e.Widget, (i/3)*3, i%3)
-				fmt.Printf("+ %d\n", ws.Id)
 			})
 		} else {
 			e = g.Entries[i]
-			fmt.Printf("= %d\n", ws.Id)
 			e.SetTarget(ws.HyprWorkspaceRef)
 			mainthread.Start(func() { e.Widget.SetVisible(true) })
 			go e.SetColors()
@@ -139,12 +134,10 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 	if j < len(g.Entries) {
 		g.LockEntry.Lock()
 		for _, e := range g.Entries[j:] {
-			fmt.Printf("- %d\n", e.Target.Id)
 			mainthread.Start(func() { e.Widget.SetVisible(false) })
 		}
 		g.LockEntry.Unlock()
 	}
-	fmt.Println("\u221a")
 	mainthread.Start(func() {
 		g.Grid.AddWidget2(g.Plus.Widget, (j/3)*3, j%3)
 		g.Plus.Widget.SetVisible(!empty)
