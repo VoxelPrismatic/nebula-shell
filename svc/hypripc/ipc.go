@@ -3,13 +3,12 @@ package hypripc
 import (
 	"bufio"
 	"fmt"
+	"nebula-shell/svc/environ"
 	"nebula-shell/svc/hyprctl"
 	"net"
-	"os"
 	"strings"
 )
 
-type Environment map[string]string
 type GenericEventListener interface {
 	update(event, value string)
 }
@@ -114,27 +113,6 @@ type IpcListener struct {
 	EvtBell EventListener[*IpcBell, hyprctl.HyprWindow]
 }
 
-func Env() Environment {
-	ret := Environment{}
-	for _, line := range os.Environ() {
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 1 {
-			ret[parts[0]] = ""
-		} else {
-			ret[parts[0]] = parts[1]
-		}
-	}
-	return ret
-}
-
-func (env Environment) Get(name string) (string, error) {
-	val, ok := env[name]
-	if !ok || val == "" {
-		return "", fmt.Errorf("environment variable $%s not set", name)
-	}
-	return val, nil
-}
-
 func fire[T any](obj *T, listeners []func(T)) {
 	for _, listener := range listeners {
 		listener(*obj)
@@ -151,7 +129,7 @@ func mustSplitN(value string, count int) []string {
 }
 
 func (ipc *IpcListener) Connect() error {
-	env := Env()
+	env := environ.Env()
 	xdgRtDir, err := env.Get("XDG_RUNTIME_DIR")
 	if err != nil {
 		return err
