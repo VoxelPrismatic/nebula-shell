@@ -2,6 +2,7 @@ package hypripc
 
 import (
 	"reflect"
+	"slices"
 	"sync"
 )
 
@@ -10,16 +11,34 @@ type Listenable[R any] interface {
 	Target() (*R, error)
 }
 
+// The callback should return True if it should be dropped.
+type EventCallback[T any] func(T) bool
+
 type EventListener[T Listenable[R], R any] struct {
 	listenLock sync.Mutex
 	store      *T
-	listeners  []func(T)
+	listeners  *[]*EventCallback[T]
 }
 
-func (lis *EventListener[T, R]) Add(cb func(T)) {
+func (lis *EventListener[T, R]) Add(cb EventCallback[T]) *EventCallback[T] {
 	lis.listenLock.Lock()
-	lis.listeners = append(lis.listeners, cb)
+	if lis.listeners == nil {
+		lis.listeners = &[]*EventCallback[T]{&cb}
+	} else {
+		*lis.listeners = append(*lis.listeners, &cb)
+	}
 	lis.listenLock.Unlock()
+	return &cb
+}
+
+func (lis *EventListener[T, R]) Drop(cb *EventCallback[T]) {
+	lis.listenLock.Lock()
+	for i, v := range *lis.listeners {
+		if v == cb {
+			*lis.listeners = slices.Delete(*lis.listeners, i, i+1)
+			return
+		}
+	}
 }
 
 func (lis *EventListener[T, R]) update(event, value string) {

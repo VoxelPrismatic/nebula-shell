@@ -8,7 +8,7 @@ import (
 type IpcToggleGroup struct {
 	updates  int
 	Included bool
-	Windows  []hyprctl.HyprWindowRef
+	Windows  []*hyprctl.HyprWindowRef
 }
 
 func (mon *IpcToggleGroup) Update(event, value string) bool {
@@ -16,10 +16,10 @@ func (mon *IpcToggleGroup) Update(event, value string) bool {
 	switch event {
 	case "togglegroup":
 		parts := strings.Split(value, ",")
-		mon.Windows = make([]hyprctl.HyprWindowRef, len(parts)-1)
+		mon.Windows = make([]*hyprctl.HyprWindowRef, len(parts)-1)
 		mon.Included = parts[0] == "1"
 		for idx, addr := range parts[1:] {
-			mon.Windows[idx] = hyprctl.HyprWindowRef{Address: addr}
+			mon.Windows[idx] = hyprctl.HyprWindowAddr(addr).Ref()
 		}
 	default:
 		panic("wrong event: " + event)

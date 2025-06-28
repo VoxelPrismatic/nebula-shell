@@ -9,13 +9,13 @@ type HyprWorkspaceRef struct {
 
 type HyprWorkspace struct {
 	HyprWorkspaceRef
-	Monitor         string `json:"monitor"`
-	MonitorId       int    `json:"monitorID"`
-	Windows         int    `json:"windows"`
-	HasFullscreen   bool   `json:"hasfullscreen"`
-	LastWindow      string `json:"lastwindow"`
-	LastWindowTitle string `json:"lastwindowtitle"`
-	IsPersistent    bool   `json:"ispersistent"`
+	Monitor         HyprMonitorName `json:"monitor"`
+	MonitorId       int             `json:"monitorID"`
+	Windows         int             `json:"windows"`
+	HasFullscreen   bool            `json:"hasfullscreen"`
+	LastWindow      HyprWindowAddr  `json:"lastwindow"`
+	LastWindowTitle string          `json:"lastwindowtitle"`
+	IsPersistent    bool            `json:"ispersistent"`
 }
 
 func (ws HyprWorkspace) GetLastWindow() (*HyprWindow, error) {

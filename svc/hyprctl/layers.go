@@ -36,7 +36,7 @@ func Layers() (*HyprLayerCall, error) {
 
 	ret := HyprLayerCall{}
 	for mon, levels := range *obj {
-		key := HyprMonitorRef{Name: mon}
+		key := *HyprMonitorName(mon).Ref()
 		val := make([][]HyprLayer, len(levels.Levels))
 		for idx, layers := range levels.Levels {
 			i, err := strconv.Atoi(idx)

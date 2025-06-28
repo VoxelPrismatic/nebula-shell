@@ -14,26 +14,31 @@ import (
 type WorkspaceGrid struct {
 	LockRefresh *sync.Mutex
 	LockEntry   *sync.Mutex
-	Monitor     *qt6.QScreen
+	Monitor     *hyprctl.HyprMonitorRef
 	Entries     []*WorkspaceEntry
 	Widget      *qt6.QWidget
 	Grid        *qt6.QGridLayout
 	Plus        *WorkspaceEntry
 }
 
-var gridCache = map[string]*WorkspaceGrid{}
+var gridCache = map[hyprctl.HyprMonitorName]*WorkspaceGrid{}
 var curWinAddr string
 
-func NewGrid(screen *qt6.QScreen) *WorkspaceGrid {
+var _ = shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) bool {
+	delete(gridCache, imr.Name)
+	return false
+})
+
+func NewGrid(monitor *hyprctl.HyprMonitorRef) *WorkspaceGrid {
 	go wsCache.Refresh()
-	if ret, ok := gridCache[screen.Name()]; ok {
+	if ret, ok := gridCache[monitor.Name]; ok {
 		return ret
 	}
 	w := qt6.NewQWidget2()
 	w.SetFixedWidth(shared.Grid.InnerWidth())
 	w.SetContentsMargins(0, 0, 0, 0)
 	g := &WorkspaceGrid{
-		Monitor:     screen,
+		Monitor:     monitor,
 		Widget:      w,
 		Grid:        qt6.NewQGridLayout(w),
 		LockRefresh: &sync.Mutex{},
@@ -45,7 +50,7 @@ func NewGrid(screen *qt6.QScreen) *WorkspaceGrid {
 		g.Plus = NewEntry(g.Monitor, -1, hyprctl.HyprWorkspaceRef{Id: -1}, g)
 	})
 
-	if qt6.QGuiApplication_PrimaryScreen().Name() == screen.Name() {
+	if qt6.QGuiApplication_PrimaryScreen().Name() == string(monitor.Name) {
 		bindRefresh()
 	}
 
@@ -61,13 +66,13 @@ func NewGrid(screen *qt6.QScreen) *WorkspaceGrid {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			curWinAddr = win.Address
+			curWinAddr = string(win.Address)
 		}()
 	})
 
 	g.Refresh(nil)
 
-	gridCache[screen.Name()] = g
+	gridCache[monitor.Name] = g
 	return g
 }
 
@@ -82,16 +87,19 @@ func propRefresh() {
 }
 
 func bindRefresh() {
-	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) {
+	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) bool {
 		propRefresh()
+		return false
 	})
 
-	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) {
+	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) bool {
 		propRefresh()
+		return false
 	})
 
-	shared.Ipc().EvtWorkspace.Add(func(iw *hypripc.IpcWorkspace) {
+	shared.Ipc().EvtWorkspace.Add(func(iw *hypripc.IpcWorkspace) bool {
 		propRefresh()
+		return false
 	})
 }
 
@@ -128,7 +136,7 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 			mainthread.Start(func() { e.Widget.SetVisible(true) })
 			go e.SetColors()
 		}
-		empty = empty || ws.Windows == 0 && ws.Monitor == g.Monitor.Name()
+		empty = empty || ws.Windows == 0 && ws.Monitor == g.Monitor.Name
 		j = i + 1
 	}
 	if j < len(g.Entries) {

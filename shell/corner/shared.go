@@ -2,11 +2,12 @@ package corner
 
 import (
 	"nebula-shell/shell/qtplus"
+	"nebula-shell/svc/hyprctl"
 
 	"github.com/mappu/miqt/qt6"
 )
 
-var Docks = map[string]*Dock{}
+var Docks = map[hyprctl.HyprMonitorName]*Dock{}
 
 type Dock struct {
 	UpperCorner *CornerRadius

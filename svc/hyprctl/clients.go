@@ -2,9 +2,11 @@ package hyprctl
 
 import "fmt"
 
+type HyprWindowAddr string
+
 type HyprWindowRef struct {
-	Address string `json:"address"`
-	Title   string `json:"title"`
+	Address HyprWindowAddr `json:"address"`
+	Title   string         `json:"title"`
 }
 
 type HyprWindow struct {
@@ -43,14 +45,26 @@ func ActiveWindow() (*HyprWindow, error) {
 }
 
 func (win HyprWindowRef) Target() (*HyprWindow, error) {
+	return win.Address.Target()
+}
+
+func (addr HyprWindowAddr) Target() (*HyprWindow, error) {
 	clients, err := Clients()
 	if err != nil {
 		return nil, err
 	}
 	for _, c := range *clients {
-		if c.Address == win.Address {
+		if c.Address == addr {
 			return &c, nil
 		}
 	}
 	return nil, fmt.Errorf("client not found")
+}
+
+func Client(addr string) (*HyprWindow, error) {
+	return HyprWindowAddr(addr).Target()
+}
+
+func (addr HyprWindowAddr) Ref() *HyprWindowRef {
+	return &HyprWindowRef{Address: addr}
 }

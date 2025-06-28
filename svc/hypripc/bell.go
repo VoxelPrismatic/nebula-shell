@@ -13,7 +13,7 @@ func (win *IpcBell) Update(event, value string) bool {
 	win.updates++
 	switch event {
 	case "bell":
-		win.Address = value
+		win.Address = hyprctl.HyprWindowAddr(value)
 	default:
 		panic("wrong event: " + event)
 	}

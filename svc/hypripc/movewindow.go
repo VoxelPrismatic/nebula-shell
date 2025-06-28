@@ -22,7 +22,7 @@ func (win *IpcMoveWindow) Update(event, value string) bool {
 		if err != nil {
 			panic(err)
 		}
-		win.Address = parts[0]
+		win.Address = hyprctl.HyprWindowAddr(parts[0])
 		win.Workspace.Id = id
 		win.Workspace.Name = parts[2]
 	default:

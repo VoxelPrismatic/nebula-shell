@@ -5,19 +5,26 @@ import (
 	"nebula-shell/shell/qtplus"
 	"nebula-shell/shell/shared"
 	"nebula-shell/shell/spaces"
+	"nebula-shell/svc/hyprctl"
+	"nebula-shell/svc/hypripc"
 	"nebula-shell/svc/layershell"
 
 	"github.com/mappu/miqt/qt6"
 )
 
-func NewDock(screen *qt6.QScreen) {
+func NewDock(monitor *hyprctl.HyprMonitorRef) {
+	screen := monitor.ToQScreen()
+	if screen == nil {
+		return
+	}
+
 	window := qt6.NewQWidget(nil)
 	window.SetContentsMargins(0, 0, 0, 0)
 	defer window.Show()
 	window.WinId()
 	window.SetAttribute(qt6.WA_TranslucentBackground)
 	wlr := layershell.MakeWindow(window.WindowHandle())
-	wlr.SetWlrScope("net.voxelprismatic.nebula#" + screen.Name())
+	wlr.SetWlrScope("net.voxelprismatic.nebula#" + string(monitor.Name))
 	wlr.SetWlrAnchors(layershell.AnchorBottom | layershell.AnchorRight | layershell.AnchorTop)
 	wlr.SetWlrKbdInteractivty(layershell.KbdInteractivityNone)
 	wlr.SetWlrExclusiveEdge(layershell.AnchorRight)
@@ -33,7 +40,7 @@ func NewDock(screen *qt6.QScreen) {
 
 	style := &qtplus.Stylesheet{}
 	ret := &corner.Dock{}
-	corner.Docks[screen.Name()] = ret
+	corner.Docks[monitor.Name] = ret
 
 	thing := qt6.NewQHBoxLayout(window)
 	thing.SetContentsMargins(0, 0, 0, 0)
@@ -68,6 +75,13 @@ func NewDock(screen *qt6.QScreen) {
 	contentLayout.SetContentsMargins(gap, gap, gap, gap)
 	thing.AddWidget(contentWidget)
 
-	contentLayout.AddWidget(spaces.NewGrid(screen).Widget)
+	contentLayout.AddWidget(spaces.NewGrid(monitor).Widget)
 	contentLayout.AddStretch()
+
+	shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) bool {
+		if imr.Name == monitor.Name {
+			window.Hide()
+		}
+		return true
+	})
 }

@@ -16,7 +16,6 @@ func (mon *IpcFocusedMonitor) Update(event, value string) bool {
 	switch event {
 	case "focusedmon":
 		parts := mustSplitN(value, 2)
-		mon.Name = parts[0]
 		mon.Workspace.Name = parts[1]
 	case "focusedmonv2":
 		parts := mustSplitN(value, 2)
@@ -24,7 +23,7 @@ func (mon *IpcFocusedMonitor) Update(event, value string) bool {
 		if err != nil {
 			panic(err)
 		}
-		mon.Name = parts[0]
+		mon.Name = hyprctl.HyprMonitorName(parts[0])
 		mon.Workspace.Id = id
 	default:
 		panic("wrong event: " + event)

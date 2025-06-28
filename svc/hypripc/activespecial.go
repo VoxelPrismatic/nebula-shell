@@ -27,7 +27,7 @@ func (mon *IpcActiveSpecial) Update(event, value string) bool {
 		} else {
 			mon.Workspace = &hyprctl.HyprWorkspaceRef{Id: id, Name: parts[1]}
 		}
-		mon.Name = parts[2]
+		mon.Name = hyprctl.HyprMonitorName(parts[2])
 	default:
 		panic("wrong event: " + event)
 	}

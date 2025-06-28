@@ -24,7 +24,7 @@ func (mon *IpcMoveWorkspace) Update(event, value string) bool {
 		}
 		mon.Workspace.Id = id
 		mon.Workspace.Name = parts[1]
-		mon.Name = parts[2]
+		mon.Name = hyprctl.HyprMonitorName(parts[2])
 	default:
 		panic("wrong event: " + event)
 	}

@@ -24,7 +24,7 @@ var SpaceNames = []string{
 type WorkspaceEntry struct {
 	Target     hyprctl.HyprWorkspaceRef
 	Widget     *qt6.QWidget
-	Monitor    *qt6.QScreen
+	Monitor    *hyprctl.HyprMonitorRef
 	Stylesheet *qtplus.Stylesheet
 	Text       *qt6.QLabel
 	Idx        int
@@ -42,7 +42,7 @@ func getMaxWsId() int {
 	}).Id + 1
 }
 
-type WsCache map[string]int
+type WsCache map[hyprctl.HyprMonitorName]int
 
 var (
 	wsCache = WsCache{}
@@ -81,7 +81,7 @@ func (c *WsCache) Restore() {
 	wsLock.Unlock()
 }
 
-func (c *WsCache) Preview(t string, ws int) {
+func (c *WsCache) Preview(t hyprctl.HyprMonitorName, ws int) {
 	if !wsLock.TryLock() {
 		return // do not block
 	}
@@ -93,7 +93,7 @@ func (c *WsCache) Preview(t string, ws int) {
 	wsLock.Unlock()
 }
 
-func NewEntry(mon *qt6.QScreen, idx int, ref hyprctl.HyprWorkspaceRef, parent *WorkspaceGrid) *WorkspaceEntry {
+func NewEntry(mon *hyprctl.HyprMonitorRef, idx int, ref hyprctl.HyprWorkspaceRef, parent *WorkspaceGrid) *WorkspaceEntry {
 	workspace := &WorkspaceEntry{
 		Target:     ref,
 		Widget:     qt6.NewQWidget2(),
@@ -125,7 +125,6 @@ func NewEntry(mon *qt6.QScreen, idx int, ref hyprctl.HyprWorkspaceRef, parent *W
 	layout := qt6.NewQVBoxLayout(w)
 	layout.AddWidget(workspace.Text.QWidget)
 	workspace.Text.SetAlignment(qt6.AlignCenter)
-	monName := mon.Name()
 
 	w.OnMousePressEvent(func(super func(event *qt6.QMouseEvent), event *qt6.QMouseEvent) {
 		id := workspace.Target.Id
@@ -140,7 +139,7 @@ func NewEntry(mon *qt6.QScreen, idx int, ref hyprctl.HyprWorkspaceRef, parent *W
 			fallthrough
 		case qt6.LeftButton:
 			wsLock.Lock()
-			wsCache[monName] = id
+			wsCache[mon.Name] = id
 			wsLock.Unlock()
 			batches = append(batches, []any{"focusworkspaceoncurrentmonitor", id})
 		case qt6.MiddleButton:
@@ -154,7 +153,7 @@ func NewEntry(mon *qt6.QScreen, idx int, ref hyprctl.HyprWorkspaceRef, parent *W
 	})
 	w.OnEnterEvent(func(super func(event *qt6.QEnterEvent), event *qt6.QEnterEvent) {
 		if workspace.Target.Id != -1 {
-			go wsCache.Preview(monName, workspace.Target.Id)
+			go wsCache.Preview(mon.Name, workspace.Target.Id)
 		}
 		workspace.SetColors()
 	})
@@ -183,7 +182,7 @@ func (e *WorkspaceEntry) GetState() ActivityFlag {
 		ret |= EntryEmpty
 	}
 
-	mon := mons.Find(e.Monitor.Name())
+	mon := mons.Find(string(e.Monitor.Name))
 	if mon != nil && mon.ActiveWorkspace.Id == e.Target.Id {
 		ret |= EntryActive
 	}

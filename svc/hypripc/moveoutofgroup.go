@@ -13,7 +13,7 @@ func (mon *IpcMoveOutOfGroup) Update(event, value string) bool {
 	mon.updates++
 	switch event {
 	case "moveoutofgroup":
-		mon.Address = value
+		mon.Address = hyprctl.HyprWindowAddr(value)
 	default:
 		panic("wrong event: " + event)
 	}

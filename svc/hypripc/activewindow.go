@@ -18,7 +18,7 @@ func (win *IpcActiveWindow) Update(event, value string) bool {
 		win.Class = parts[0]
 		win.Title = parts[1]
 	case "activewindowv2":
-		win.Address = value
+		win.Address = hyprctl.HyprWindowAddr(value)
 	default:
 		panic("wrong event: " + event)
 	}

@@ -15,7 +15,7 @@ func (win *IpcMinimized) Update(event, value string) bool {
 	switch event {
 	case "minimized":
 		parts := mustSplitN(value, 2)
-		win.Address = parts[0]
+		win.Address = hyprctl.HyprWindowAddr(parts[0])
 		win.State = parts[1] == "1"
 	default:
 		panic("wrong event: " + event)

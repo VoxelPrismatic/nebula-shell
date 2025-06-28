@@ -16,7 +16,7 @@ func (obj *IpcWindowTitle) Update(event, value string) bool {
 		break
 	case "windowtitlev2":
 		parts := mustSplitN(value, 2)
-		obj.Address = parts[0]
+		obj.Address = hyprctl.HyprWindowAddr(parts[0])
 		obj.Title = parts[1]
 	default:
 		panic("wrong event: " + event)

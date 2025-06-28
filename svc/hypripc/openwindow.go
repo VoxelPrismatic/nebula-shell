@@ -16,7 +16,7 @@ func (win *IpcOpenWindow) Update(event, value string) bool {
 	switch event {
 	case "openwindow":
 		parts := mustSplitN(value, 4)
-		win.Address = parts[0]
+		win.Address = hyprctl.HyprWindowAddr(parts[0])
 		win.Workspace.Name = parts[1]
 		win.Class = parts[2]
 		win.Title = parts[3]

@@ -6,6 +6,7 @@ import (
 	"nebula-shell/svc/environ"
 	"nebula-shell/svc/hyprctl"
 	"net"
+	"slices"
 	"strings"
 )
 
@@ -113,10 +114,20 @@ type IpcListener struct {
 	EvtBell EventListener[*IpcBell, hyprctl.HyprWindow]
 }
 
-func fire[T any](obj *T, listeners []func(T)) {
-	for _, listener := range listeners {
-		listener(*obj)
+func fire[T any](obj *T, listeners *[]*EventCallback[T]) {
+	if listeners == nil {
+		return
 	}
+
+	toDrop := []*EventCallback[T]{}
+	for _, listener := range *listeners {
+		if (*listener)(*obj) {
+			toDrop = append(toDrop, listener)
+		}
+	}
+	*listeners = slices.DeleteFunc(*listeners, func(cb *EventCallback[T]) bool {
+		return slices.Contains(toDrop, cb)
+	})
 	*obj = *new(T)
 }
 

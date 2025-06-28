@@ -23,7 +23,7 @@ func (mon *IpcMonitorRemoved) Update(event, value string) bool {
 			panic(err)
 		}
 		mon.Id = id
-		mon.Name = parts[1]
+		mon.Name = hyprctl.HyprMonitorName(parts[1])
 		mon.Description = parts[2]
 	default:
 		panic("wrong event: " + event)
