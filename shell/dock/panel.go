@@ -25,7 +25,7 @@ func NewDock(monitor *hyprctl.HyprMonitorRef) {
 	window.WinId()
 	window.SetAttribute(qt6.WA_TranslucentBackground)
 	wlr := layershell.MakeWindow(window.WindowHandle())
-	wlr.SetWlrScope("net.voxelprismatic.nebula#" + string(monitor.Name))
+	wlr.SetWlrScope("net.voxelprismatic.nebula")
 	wlr.SetWlrAnchors(layershell.AnchorBottom | layershell.AnchorRight | layershell.AnchorTop)
 	wlr.SetWlrKbdInteractivty(layershell.KbdInteractivityNone)
 	wlr.SetWlrExclusiveEdge(layershell.AnchorRight)
@@ -83,6 +83,8 @@ func NewDock(monitor *hyprctl.HyprMonitorRef) {
 	contentLayout.AddWidget(NewSeparator())
 	contentLayout.AddWidget(tiles.NewList(monitor).Widget)
 	contentLayout.AddStretch()
+
+	NewTray(monitor)
 
 	shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) bool {
 		if imr.Name == monitor.Name {

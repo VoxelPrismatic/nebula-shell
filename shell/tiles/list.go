@@ -52,7 +52,7 @@ func NewListEntry(monitor *hyprctl.HyprMonitorRef, window *hyprctl.HyprWindow) *
 
 	s.Set("background-color", shared.Theme.Dawn.Layer.Overlay)
 	s.Set("color", shared.Theme.Dawn.Text.Normal)
-	s.Set("border-radius", fmt.Sprintf("%dpx", shared.Grid.Margin))
+	s.Set("border-radius", fmt.Sprintf("%dpx", 4))
 
 	ret := &ListEntry{
 		Parent:  w,
@@ -98,6 +98,7 @@ func NewList(monitor *hyprctl.HyprMonitorRef) *TileList {
 	}
 
 	list.List.SetContentsMargins(0, 0, 0, 0)
+	list.List.SetSpacing(shared.Grid.Gap)
 	w.SetFixedWidth(shared.Grid.InnerWidth())
 	list.Style.AddTarget(w)
 
