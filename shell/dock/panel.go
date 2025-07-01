@@ -1,10 +1,11 @@
 package dock
 
 import (
+	"fmt"
 	"nebula-shell/shell/corner"
-	"nebula-shell/shell/qtplus"
 	"nebula-shell/shell/shared"
 	"nebula-shell/shell/spaces"
+	"nebula-shell/shell/tiles"
 	"nebula-shell/svc/hyprctl"
 	"nebula-shell/svc/hypripc"
 	"nebula-shell/svc/layershell"
@@ -38,13 +39,13 @@ func NewDock(monitor *hyprctl.HyprMonitorRef) {
 	wlr.SetWlrExclusionZone(int32(shared.Width))
 	window.SetGeometry(rect.X()+rect.Width()-w, rect.Y()+rect.Height()-h, w, h)
 
-	style := &qtplus.Stylesheet{}
 	ret := &corner.Dock{}
 	corner.Docks[monitor.Name] = ret
 
 	thing := qt6.NewQHBoxLayout(window)
 	thing.SetContentsMargins(0, 0, 0, 0)
 	thing.SetSpacing(0)
+	ret.Thing = thing
 
 	radiusWidget := qt6.NewQWidget(nil)
 	radiusWidget.SetContentsMargins(0, 0, 0, 0)
@@ -68,19 +69,24 @@ func NewDock(monitor *hyprctl.HyprMonitorRef) {
 	contentWidget.SetFixedSize2(shared.Width, h)
 	contentLayout := qt6.NewQVBoxLayout(contentWidget)
 	ret.Content = contentLayout
-	ret.Style = style
-	style.AddTarget(contentLayout.ParentWidget())
-	style.Set("background-color", shared.Theme.Dawn.Layer.Base)
+	contentLayout.ParentWidget().SetStyleSheet(fmt.Sprintf(
+		"background-color: %s;",
+		shared.Theme.Dawn.Layer.Base,
+	))
 	gap := shared.Grid.Margin
 	contentLayout.SetContentsMargins(gap, gap, gap, gap)
 	thing.AddWidget(contentWidget)
 
 	contentLayout.AddWidget(spaces.NewGrid(monitor).Widget)
+	contentLayout.AddWidget(NewSeparator())
+	contentLayout.AddWidget(tiles.NewGrid(monitor).Widget)
+	contentLayout.AddWidget(NewSeparator())
+	contentLayout.AddWidget(tiles.NewList(monitor).Widget)
 	contentLayout.AddStretch()
 
 	shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) bool {
 		if imr.Name == monitor.Name {
-			window.Hide()
+			window.Close()
 		}
 		return true
 	})

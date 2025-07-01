@@ -5,22 +5,22 @@ import (
 )
 
 type desktopCache struct {
-	cache map[string]*DesktopFilePlus
+	Cache map[string]*DesktopFilePlus
 }
 
 var Cache = desktopCache{}
 
 func (d *desktopCache) Clear() {
-	d.cache = map[string]*DesktopFilePlus{}
+	d.Cache = map[string]*DesktopFilePlus{}
 }
 
 func (d *desktopCache) Scan() {
-	if d.cache == nil {
-		d.cache = map[string]*DesktopFilePlus{}
+	if d.Cache == nil {
+		d.Cache = map[string]*DesktopFilePlus{}
 	}
 
 	for _, path := range Scan() {
-		if d.cache[path] != nil {
+		if d.Cache[path] != nil {
 			continue
 		}
 
@@ -28,12 +28,12 @@ func (d *desktopCache) Scan() {
 		if err != nil {
 			continue
 		}
-		d.cache[path] = f
+		d.Cache[path] = f
 	}
 }
 
 func (d *desktopCache) find(cb func(f *DesktopFilePlus) bool) *DesktopFilePlus {
-	for _, p := range d.cache {
+	for _, p := range d.Cache {
 		if p != nil && cb(p) {
 			return p
 		}
@@ -55,7 +55,7 @@ func (d *desktopCache) Best(cb func(f *DesktopFilePlus) float64) (*DesktopFilePl
 	retScore := 0.0
 	retVal := &DesktopFilePlus{}
 	d.Scan()
-	for _, p := range d.cache {
+	for _, p := range d.Cache {
 		if p == nil {
 			continue
 		}
@@ -75,7 +75,7 @@ func (d *desktopCache) Fuzzy(matches map[string]func(f *DesktopFilePlus) string)
 	for match, key := range matches {
 		targets := map[string]*DesktopFilePlus{}
 		keys := []string{}
-		for _, p := range d.cache {
+		for _, p := range d.Cache {
 			if p == nil {
 				continue
 			}

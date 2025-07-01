@@ -25,7 +25,7 @@ var (
 		},
 	}
 	Theme = sakura.MapSwatch(sakura.Sakura.Parse(), func(c uint) string {
-		return fmt.Sprintf("#%06X", c)
+		return fmt.Sprintf("#%06x", c)
 	})
 	Radius = 12
 	Width  = Grid.OuterWidth()

@@ -5,7 +5,6 @@ import (
 	"nebula-shell/shell/shared"
 	"nebula-shell/svc/hyprctl"
 	"nebula-shell/svc/hypripc"
-	"nebula-shell/svc/layershell"
 	"os"
 	"sync"
 
@@ -14,7 +13,7 @@ import (
 )
 
 func main() {
-	layershell.UseLayerShell()
+	// layershell.UseLayerShell()
 	qt6.NewQApplication(os.Args)
 	defer qt6.QApplication_Exec()
 	for _, screen := range qt6.QGuiApplication_Screens() {

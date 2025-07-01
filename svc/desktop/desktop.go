@@ -36,7 +36,8 @@ type DesktopFile struct {
 
 type DesktopFilePlus struct {
 	DesktopFile
-	Actions []*DesktopAction
+	Actions   []*DesktopAction
+	FilePath_ string
 }
 
 // var localized = []string{"name", "genericname", "comment", "keywords"}
@@ -53,7 +54,7 @@ func FromFile(path string) (*DesktopFilePlus, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret := &DesktopFilePlus{}
+	ret := &DesktopFilePlus{FilePath_: path}
 
 	isDesktop := false
 	for _, sec := range cfg.Sections() {

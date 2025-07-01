@@ -21,7 +21,7 @@ type WorkspaceGrid struct {
 	Plus        *WorkspaceEntry
 }
 
-var gridCache = map[hyprctl.HyprMonitorName]*WorkspaceGrid{}
+var gridCache map[hyprctl.HyprMonitorName]*WorkspaceGrid
 var curWinAddr string
 
 var _ = shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) bool {
@@ -30,7 +30,11 @@ var _ = shared.Ipc().EvtMonitorRemoved.Add(func(imr *hypripc.IpcMonitorRemoved) 
 })
 
 func NewGrid(monitor *hyprctl.HyprMonitorRef) *WorkspaceGrid {
-	go wsCache.Refresh()
+	go WsCache.Refresh()
+	if gridCache == nil {
+		gridCache = map[hyprctl.HyprMonitorName]*WorkspaceGrid{}
+		bindRefresh()
+	}
 	if ret, ok := gridCache[monitor.Name]; ok {
 		return ret
 	}
@@ -50,18 +54,15 @@ func NewGrid(monitor *hyprctl.HyprMonitorRef) *WorkspaceGrid {
 		g.Plus = NewEntry(g.Monitor, -1, hyprctl.HyprWorkspaceRef{Id: -1}, g)
 	})
 
-	if qt6.QGuiApplication_PrimaryScreen().Name() == string(monitor.Name) {
-		bindRefresh()
-	}
-
 	w.OnLeaveEvent(func(super func(event *qt6.QEvent), event *qt6.QEvent) {
 		if w.UnderMouse() {
 			return
 		}
-		go wsCache.Restore()
+		go WsCache.Restore()
 	})
 	w.OnEnterEvent(func(super func(event *qt6.QEnterEvent), event *qt6.QEnterEvent) {
 		go func() {
+			go WsCache.Refresh()
 			win, err := hyprctl.ActiveWindow()
 			if err != nil {
 				log.Fatalln(err)
@@ -87,18 +88,26 @@ func propRefresh() {
 }
 
 func bindRefresh() {
+	bounceTimer := qt6.NewQTimer()
+	bounceTimer.SetSingleShot(true)
+	bounceTimer.OnTimeout(propRefresh)
+
+	bounce := func() {
+		go mainthread.Start(func() { bounceTimer.Start(10) })
+	}
+
 	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) bool {
-		propRefresh()
+		bounce()
 		return false
 	})
 
 	shared.Ipc().EvtDestroyWorkspace.Add(func(idw *hypripc.IpcDestroyWorkspace) bool {
-		propRefresh()
+		bounce()
 		return false
 	})
 
 	shared.Ipc().EvtWorkspace.Add(func(iw *hypripc.IpcWorkspace) bool {
-		propRefresh()
+		bounce()
 		return false
 	})
 }
@@ -107,6 +116,8 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 	if !g.LockRefresh.TryLock() {
 		return // Refresh is already in progress
 	}
+	defer g.LockRefresh.Unlock()
+
 	if wss == nil {
 		var err error
 		wss, err = hyprctl.Workspaces()
@@ -118,7 +129,6 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 		}
 	}
 
-	j := 0
 	empty := false
 	for i, ws := range *wss {
 		var e *WorkspaceEntry
@@ -137,18 +147,18 @@ func (g *WorkspaceGrid) Refresh(wss *[]hyprctl.HyprWorkspace) {
 			go e.SetColors()
 		}
 		empty = empty || ws.Windows == 0 && ws.Monitor == g.Monitor.Name
-		j = i + 1
 	}
-	if j < len(g.Entries) {
+
+	i := len(*wss)
+	if i < len(g.Entries) {
 		g.LockEntry.Lock()
-		for _, e := range g.Entries[j:] {
+		for _, e := range g.Entries[i:] {
 			mainthread.Start(func() { e.Widget.SetVisible(false) })
 		}
 		g.LockEntry.Unlock()
 	}
 	mainthread.Start(func() {
-		g.Grid.AddWidget2(g.Plus.Widget, (j/3)*3, j%3)
+		g.Grid.AddWidget2(g.Plus.Widget, (i/3)*3, i%3)
 		g.Plus.Widget.SetVisible(!empty)
 	})
-	g.LockRefresh.Unlock()
 }

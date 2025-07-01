@@ -18,14 +18,6 @@ type HyprWorkspace struct {
 	IsPersistent    bool            `json:"ispersistent"`
 }
 
-func (ws HyprWorkspace) GetLastWindow() (*HyprWindow, error) {
-	return HyprWindowRef{Address: ws.LastWindow, Title: ws.LastWindowTitle}.Target()
-}
-
-func (ws HyprWorkspace) GetMonitor() (*HyprMonitor, error) {
-	return HyprMonitorRef{Id: ws.MonitorId, Name: ws.Monitor}.Target()
-}
-
 func (ws HyprWorkspaceRef) Target() (*HyprWorkspace, error) {
 	wss, err := Workspaces()
 	if err != nil {

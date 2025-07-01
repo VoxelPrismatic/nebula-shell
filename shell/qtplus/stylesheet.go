@@ -1,19 +1,22 @@
 package qtplus
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/mappu/miqt/qt6"
 )
 
 type Styleable interface {
+	Style() *qt6.QStyle
+	SetStyle(*qt6.QStyle)
 	SetStyleSheet(string)
 }
 
 type Stylesheet struct {
+	style   map[string]string
 	targets []Styleable
-	styles  map[string]string
 }
 
 func (s *Stylesheet) AddTarget(target Styleable) {
@@ -29,22 +32,24 @@ func (s *Stylesheet) DropTarget(target Styleable) {
 	}
 }
 
-func (s *Stylesheet) Set(prop string, value any) {
-	if s.styles == nil {
-		s.styles = map[string]string{}
+func (s *Stylesheet) Update(prop string, value any) {
+	if s.style == nil {
+		s.style = map[string]string{}
 	}
 
 	valueStr := fmt.Sprint(value)
 
 	if valueStr == "" {
-		delete(s.styles, prop)
+		delete(s.style, prop)
 	} else {
-		s.styles[prop] = valueStr
+		s.style[prop] = valueStr
 	}
+}
 
-	lines := make([]string, len(s.styles))
+func (s *Stylesheet) Apply() {
+	lines := make([]string, len(s.style))
 	i := 0
-	for key, val := range s.styles {
+	for key, val := range s.style {
 		lines[i] = fmt.Sprintf("%s: %s;", key, val)
 		i++
 	}
@@ -54,10 +59,7 @@ func (s *Stylesheet) Set(prop string, value any) {
 	}
 }
 
-func (s *Stylesheet) Get(prop string) string {
-	return s.styles[prop]
-}
-
-func (s *Stylesheet) Compare(prop string, expect any) int {
-	return cmp.Compare(s.styles[prop], fmt.Sprint(expect))
+func (s *Stylesheet) Set(prop string, value any) {
+	s.Update(prop, value)
+	s.Apply()
 }

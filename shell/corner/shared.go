@@ -1,7 +1,7 @@
 package corner
 
 import (
-	"nebula-shell/shell/qtplus"
+	"fmt"
 	"nebula-shell/svc/hyprctl"
 
 	"github.com/mappu/miqt/qt6"
@@ -13,14 +13,19 @@ type Dock struct {
 	UpperCorner *CornerRadius
 	LowerCorner *CornerRadius
 	Content     *qt6.QVBoxLayout
-	Style       *qtplus.Stylesheet
+	Thing       *qt6.QHBoxLayout
+	color       string
 }
 
 func (d *Dock) SetColor(color string) {
-	if d.Style.Compare("background-color", color) == 0 {
+	if color == d.color {
 		return
 	}
-	d.Style.Set("background-color", color)
+	d.color = color
+	d.Content.ParentWidget().SetStyleSheet(fmt.Sprintf(
+		"background-color: %s;", color,
+	))
+
 	d.UpperCorner.Color = color
 	d.LowerCorner.Color = color
 	d.LowerCorner.Repaint()

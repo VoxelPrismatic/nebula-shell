@@ -1,6 +1,12 @@
 package hyprctl
 
-import "fmt"
+import (
+	"fmt"
+	"nebula-shell/svc/desktop"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 type HyprWindowAddr string
 
@@ -67,4 +73,92 @@ func Client(addr string) (*HyprWindow, error) {
 
 func (addr HyprWindowAddr) Ref() *HyprWindowRef {
 	return &HyprWindowRef{Address: addr}
+}
+
+func (win *HyprWindow) DesktopFile() *desktop.DesktopFilePlus {
+	if v := win.bestByName(); v != nil {
+		return v
+	}
+	if v := win.bestByBinary(); v != nil {
+		return v
+	}
+	if v := win.bestByClass(); v != nil {
+		return v
+	}
+	if v := win.bestByMatch(); v != nil {
+		return v
+	}
+	return nil
+}
+
+func (win *HyprWindow) Binary() (string, error) {
+	link, err := os.Readlink(fmt.Sprintf("/proc/%d/exe", win.Pid))
+	if err != nil {
+		return "", err
+	}
+	return filepath.Base(link), nil
+}
+
+func (win *HyprWindow) bestByName() *desktop.DesktopFilePlus {
+	c := win.Class + ".desktop"
+	later := map[string]*desktop.DesktopFilePlus{}
+	for path, obj := range desktop.Cache.Cache {
+		if !strings.Contains(path, "/applications/") {
+			later[path] = obj
+			continue
+		}
+		f := filepath.Base(path)
+		if strings.EqualFold(f, c) {
+			return obj
+		}
+	}
+	for path, obj := range later {
+		f := filepath.Base(path)
+		if strings.EqualFold(f, c) {
+			return obj
+		}
+	}
+	return nil
+}
+
+func (win *HyprWindow) bestByBinary() *desktop.DesktopFilePlus {
+	bin, _ := win.Binary()
+	if bin == "" {
+		return nil
+	}
+	for _, obj := range desktop.Cache.Cache {
+		if obj.Exec == "" {
+			continue
+		}
+
+		fields := strings.Fields(obj.Exec)
+		if len(fields) == 0 {
+			continue
+		}
+
+		if strings.EqualFold(fields[0], bin) {
+			return obj
+		}
+	}
+	return nil
+}
+
+func (win *HyprWindow) bestByClass() *desktop.DesktopFilePlus {
+	for _, obj := range desktop.Cache.Cache {
+		if strings.EqualFold(obj.StartupWMClass, win.InitialClass) {
+			return obj
+		}
+	}
+	return nil
+}
+
+func (win *HyprWindow) bestByMatch() *desktop.DesktopFilePlus {
+	parts := strings.Split(win.Class, ".")
+	c := parts[len(parts)-1]
+
+	return desktop.Cache.Fuzzy(map[string]func(f *desktop.DesktopFilePlus) string{
+		c: func(f *desktop.DesktopFilePlus) string {
+			return f.Name
+		},
+	})
 }

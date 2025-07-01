@@ -65,8 +65,6 @@ func BatchDispatch(params ...[]any) (string, error) {
 	args := []string{"--batch", strings.Join(batches, "; ")}
 
 	cmd := exec.Command("hyprctl", args...)
-	fmt.Println(args)
-	fmt.Println(params)
 	stdout, stderr := cmd.CombinedOutput()
 	out := string(stdout)
 	return out, stderr
